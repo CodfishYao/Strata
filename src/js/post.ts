@@ -84,8 +84,14 @@ function trackProgress(): void {
     const viewport = window.innerHeight;
     const span = rect.height - viewport * 0.6;
     const passed = -rect.top + viewport * 0.3;
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - viewport;
     const ratio =
-      span <= 0 ? (rect.top < 0 ? 1 : 0) : Math.min(1, Math.max(0, passed / span));
+      span > 0
+        ? Math.min(1, Math.max(0, passed / span))
+        : scrollable > 0
+          ? Math.min(1, Math.max(0, window.scrollY / scrollable))
+          : 0;
     bar.style.transform = `scaleX(${ratio})`;
     ticking = false;
   };

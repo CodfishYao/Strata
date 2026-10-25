@@ -545,7 +545,7 @@ function initExternalLinks(): void {
     if (!link) return;
     const href = link.getAttribute("href") ?? "";
     if (!/^https?:\/\//i.test(href)) return;
-    if (link.hasAttribute("data-ext-skip") || link.target === "_blank") return;
+    if (link.hasAttribute("data-ext-skip")) return;
     if (link.hostname === window.location.hostname) return;
     if (patterns.some((re) => re.test(href))) return;
     if (!modal.hidden) return;
@@ -1040,7 +1040,29 @@ function initAvifCovers(): void {
       .catch(() => cache.set(candidate, null));
   });
 }
+
+// ---------- 旧页面缓存引用了已删除的哈希资源时，自动刷新一次 ----------
+function initAssetReload(): void {
+  window.addEventListener("load", () => {
+    try {
+      const links = Array.from(
+        document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"][href*="/themes/"]'),
+      );
+      if (links.length === 0 || links.every((link) => link.sheet)) return;
+      const key = "strata-asset-reload";
+      const last = Number(sessionStorage.getItem(key) || 0);
+      if (Date.now() - last < 10_000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+      const url = new URL(location.href);
+      url.searchParams.set("v", String(Date.now()));
+      location.replace(url.toString());
+    } catch {
+      /* 忽略存储或 URL 异常 */
+    }
+  });
+}
 initAvifCovers();
+initAssetReload();
 initMenu();
 initLightbox();
 initExternalLinks();

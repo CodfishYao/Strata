@@ -19,9 +19,10 @@
   <body>
     <th:block th:fragment="content">
       <!-- 空白文章：不套卡片、不加标题、不生成目录，正文 HTML 原样输出 -->
+      <div class="read-progress" data-progress hidden></div>
       <div class="page-body">
         <div class="wrap">
-          <div class="raw-page" th:classappend="${#annotations.contains(post, 'blocks')} ? ' raw-page--with-blocks'" th:utext="${post.content.content}"></div>
+          <div class="raw-page" data-content th:classappend="${#annotations.contains(post, 'blocks')} ? ' raw-page--with-blocks'" th:utext="${post.content.content}"></div>
           <th:block
             th:replace="~{modules/page-blocks :: render(
               blocks=${#annotations.contains(post, 'blocks') ? #annotations.get(post, 'blocks') : ''})}"

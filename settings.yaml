@@ -780,7 +780,7 @@ spec:
         - $formkit: textarea
           name: external_whitelist
           label: 白名单（支持正则，每行一条）
-          value: "^https?://(www\\.)?(halo\\.run|github\\.com)"
+          value: ""
           help: "命中白名单的链接直接跳转，不弹提示。"
 
     # ---------------- 性能 ----------------
