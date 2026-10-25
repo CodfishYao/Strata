@@ -1,0 +1,101 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|归档 - ${site.title}|">归档</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${archives.page > 1 ? site.url + site.routes.archivesUri + '/page/' + archives.page : site.url + site.routes.archivesUri},
+        title=${'归档 - ' + site.title},
+        description=${''},
+        type='website',
+        image=${site.logo})}"
+    />
+    <link
+      rel="prev"
+      th:if="${archives.hasPrevious()}"
+      th:href="${site.url + site.routes.archivesUri + (archives.page > 2 ? '/page/' + (archives.page - 1) : '')}"
+    />
+    <link
+      rel="next"
+      th:if="${archives.hasNext()}"
+      th:href="${site.url + site.routes.archivesUri + '/page/' + (archives.page + 1)}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="
+        cols=${(theme.config?.style?.layout_archive ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_archive},
+        infinite=${false}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div
+              class="page-main"
+              th:attr="data-infinite=${infinite and archives.hasNext()} ? 'on' : null,data-next=${archives.hasNext() ? archives.nextUrl : null}"
+            >
+              <header class="surface page-head">
+                <h1 class="page-title">归档</h1>
+                <p class="page-desc">按时间倒序排列的全部文章。</p>
+              </header>
+
+              <p class="empty surface" th:if="${#lists.isEmpty(archives.items)}">
+                还没有文章。
+              </p>
+
+              <div data-infinite-container>
+                <section
+                  class="surface archive-year"
+                  th:each="archive : ${archives.items}"
+                >
+                <h2 class="archive-year__title" th:text="${archive.year}"></h2>
+                <div class="archive-month" th:each="month : ${archive.months}">
+                  <h3 class="archive-month__title" th:text="|${month.month} 月|"></h3>
+                  <ul class="archive-list">
+                    <li th:each="post : ${month.posts}">
+                      <time
+                        th:datetime="${post.spec.publishTime}"
+                        th:text="${#temporals.format(post.spec.publishTime, 'MM-dd')}"
+                      ></time>
+                      <a
+                        th:href="@{${post.status.permalink}}"
+                        th:text="${post.spec.title}"
+                      ></a>
+                    </li>
+                  </ul>
+                </div>
+                </section>
+              </div>
+
+              <nav class="pager surface" th:if="${archives.hasPrevious() or archives.hasNext()}">
+                <a th:if="${archives.hasPrevious()}" th:href="@{${archives.prevUrl}}">上一页</a>
+                <span th:unless="${archives.hasPrevious()}"></span>
+                <span
+                  class="pager__status"
+                  th:text="|${archives.page} / ${archives.totalPages}|"
+                ></span>
+                <a th:if="${archives.hasNext()}" th:href="@{${archives.nextUrl}}">下一页</a>
+                <span th:unless="${archives.hasNext()}"></span>
+              </nav>
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

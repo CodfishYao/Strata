@@ -1,0 +1,58 @@
+<ul
+  class="post-list"
+  th:fragment="list(posts)"
+  data-style="card"
+  th:with="showCover=${theme.config?.list?.cover_enabled ?: true},
+           coverPos=${theme.config?.list?.cover_position ?: 'left'},
+           coverFit=${theme.config?.list?.cover_fit ?: 'inset'},
+           coverSize=${theme.config?.list?.cover_size ?: 'md'},
+           coverRatio=${theme.config?.list?.cover_ratio ?: '4:3'},
+           coverAuto=${(theme.config?.list?.cover_auto_height ?: true) ? '1' : '0'},
+           coverZoom=${theme.config?.list?.cover_zoom ?: true}"
+>
+  <li
+    class="post-item"
+    th:each="post, stat : ${posts}"
+    th:with="hasCover=${showCover and not #strings.isEmpty(post.spec.cover)}"
+  >
+    <a
+      class="post-card"
+      th:href="@{${post.status.permalink}}"
+      th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null,
+               data-cover=${hasCover ? coverPos : null},
+               data-fit=${hasCover ? coverFit : null},
+               data-size=${hasCover ? coverSize : null},
+               data-ratio=${hasCover ? coverRatio : null},
+               data-auto=${hasCover ? coverAuto : null},
+               data-zoom=${hasCover and coverZoom ? '1' : null}"
+    >
+      <div class="post-card__cover" th:if="${hasCover}">
+        <img
+          th:src="${post.spec.cover}"
+          alt=""
+          data-avif-cover
+          loading="lazy"
+          decoding="async"
+          th:attr="fetchpriority=${stat.first and (theme.config?.perf?.enable_priority_image ?: true)} ? 'high' : null"
+        />
+      </div>
+
+      <div class="post-card__body">
+        <h2 class="post-card__title" th:text="${post.spec.title}"></h2>
+        <p
+          class="post-item__excerpt"
+          th:if="${not #strings.isEmpty(post.status.excerpt)}"
+          th:text="${post.status.excerpt}"
+        ></p>
+        <div class="post-meta">
+          <span class="pin-badge" th:if="${post.spec.pinned}" th:text="#{common.pinned}">置顶</span>
+          <time
+            th:datetime="${post.spec.publishTime}"
+            th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}"
+          ></time>
+          <span th:each="cat : ${post.categories}" th:text="${cat.spec.displayName}"></span>
+        </div>
+      </div>
+    </a>
+  </li>
+</ul>

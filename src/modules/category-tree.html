@@ -1,0 +1,13 @@
+<ul class="category-tree" th:fragment="tree(categories)">
+  <li th:each="category : ${categories}">
+    <a th:href="@{${category.status.permalink}}">
+      <span th:text="${category.spec.displayName}"></span>
+      <span class="category-tree__count" th:text="${category.postCount}"></span>
+    </a>
+    <th:block th:if="${not #lists.isEmpty(category.children)}">
+      <th:block
+        th:replace="~{modules/category-tree :: tree(categories=${category.children})}"
+      ></th:block>
+    </th:block>
+  </li>
+</ul>

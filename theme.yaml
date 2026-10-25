@@ -1,0 +1,39 @@
+apiVersion: theme.halo.run/v1alpha1
+kind: Theme
+metadata:
+  name: strata
+spec:
+  displayName: Strata
+  author:
+    name: CodfishYao (yaohaolin.cn)
+    website: https://yaohaolin.cn
+  description: 层理 Strata —— 卡片化的极简技术博客主题
+  logo: /themes/strata/assets/brand/logo.svg
+  homepage: https://github.com/CodfishYao/theme-strata#readme
+  repo: https://github.com/CodfishYao/theme-strata
+  issues: https://github.com/CodfishYao/theme-strata/issues
+  settingName: "strata-setting"
+  configMapName: "strata-configMap"
+  version: 1.2.0
+  requires: ">=2.27.0"
+  customTemplates:
+    post:
+      - name: 空白文章
+        description: 无卡片、无目录、无标题，正文 HTML 原样输出，适合自行编写交互式内容
+        file: raw-post.html
+    page:
+      - name: 空白页面
+        description: 无卡片的纯净页面，正文 HTML 原样输出，适合放置自定义 HTML 工具
+        file: raw.html
+      - name: 留言板
+        description: 留言板页面，带留言须知与评论组件
+        file: guestbook.html
+      - name: 友情链接
+        description: 友链墙 + 申请流程 / 须知 / 免责声明 + 友链申请表单
+        file: links.html
+      - name: 个人链接
+        description: 以卡片形式罗列你在其他平台的主页，数据在主题设置中维护
+        file: profiles.html
+  license:
+    - name: "MIT"
+      url: "https://opensource.org/licenses/MIT"

@@ -1,0 +1,77 @@
+<th:block th:fragment="items(menuItems)">
+  <li
+    th:each="item : ${menuItems}"
+    th:classappend="${not #lists.isEmpty(item.children)} ? 'has-children'"
+    th:with="menuHref=${item.status.href ?: item.spec.href ?: ''},
+             menuIcon=${#annotations.contains(item, 'icon')
+               ? #annotations.get(item, 'icon')
+               : (menuHref == '/'
+                 ? 'ri:home-4-line'
+                 : (#strings.startsWith(menuHref, '/archives')
+                   ? 'ri:article-line'
+                   : (#strings.startsWith(menuHref, '/categories')
+                     ? 'ri:folder-3-line'
+                     : (#strings.startsWith(menuHref, '/tags')
+                       ? 'ri:price-tag-3-line'
+                       : (#strings.contains(menuHref, '/friends')
+                         ? 'ri:link'
+                         : (#strings.contains(menuHref, '/profiles')
+                           ? 'ri:briefcase-line'
+                           : (#strings.contains(menuHref, '/about')
+                             ? 'ri:user-line'
+                             : (#strings.startsWith(menuHref, 'http')
+                               ? 'ri:external-link-line'
+                               : (#lists.isEmpty(item.children) ? '' : 'ri:apps-2-line')))))))))},
+             menuIconUrl=${#strings.isEmpty(menuIcon)
+               ? ''
+               : (#strings.startsWith(menuIcon, 'data:')
+                 or #strings.startsWith(menuIcon, 'http')
+                 or #strings.startsWith(menuIcon, '<svg')
+                 ? menuIcon
+                 : 'https://api.iconify.design/' + #strings.replace(menuIcon, ':', '/') + '.svg')}"
+  >
+    <th:block th:if="${#lists.isEmpty(item.children)}">
+      <a th:href="@{${menuHref}}">
+        <span
+          th:if="${(theme.config?.header?.show_menu_icons ?: true) and not #strings.isEmpty(menuIconUrl)}"
+          class="menu-ico social-btn__icon"
+          th:style="|--ink-icon:url('${menuIconUrl}')|"
+          aria-hidden="true"
+        ></span>
+        <span th:text="${item.status.displayName ?: item.spec.displayName}"></span>
+      </a>
+    </th:block>
+
+    <th:block th:unless="${#lists.isEmpty(item.children)}">
+      <!-- 有子菜单的父项不跳转，避免展开后误触 -->
+      <button
+        type="button"
+        class="menu-parent"
+        data-menu-parent
+        aria-expanded="false"
+      >
+        <span
+          th:if="${(theme.config?.header?.show_menu_icons ?: true) and not #strings.isEmpty(menuIconUrl)}"
+          class="menu-ico social-btn__icon"
+          th:style="|--ink-icon:url('${menuIconUrl}')|"
+          aria-hidden="true"
+        ></span>
+        <span th:text="${item.status.displayName ?: item.spec.displayName}"></span>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      <ul class="submenu">
+        <th:block
+          th:replace="~{modules/menu-tree :: items(menuItems=${item.children})}"
+        ></th:block>
+      </ul>
+    </th:block>
+  </li>
+</th:block>

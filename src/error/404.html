@@ -1,0 +1,32 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|404 - ${site.title}|">404</title>
+    <meta name="robots" content="noindex" />
+  </th:block>
+
+  <body>
+    <th:block th:fragment="content">
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" data-cols="one">
+            <div class="page-main">
+              <section class="surface error-page">
+                <p class="error-page__code">404</p>
+                <h1 class="error-page__title">页面不存在</h1>
+                <p class="error-page__desc">这个地址没有对应的内容，可能被移动或删除了。</p>
+                <div class="error-page__actions">
+                  <a class="btn btn--primary" th:href="@{/}">回到首页</a>
+                  <a class="btn" th:href="@{${site.routes.archivesUri}}">浏览归档</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

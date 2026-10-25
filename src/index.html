@@ -1,0 +1,164 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="${site.title}">站点标题</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${posts.page > 1 ? site.url + '/page/' + posts.page : site.url + '/'},
+        title=${site.title},
+        description=${''},
+        type='website',
+        image=${site.logo})}"
+    />
+    <link
+      rel="prev"
+      th:if="${posts.hasPrevious()}"
+      th:href="${site.url + (posts.page > 2 ? '/page/' + (posts.page - 1) : '/')}"
+    />
+    <link
+      rel="next"
+      th:if="${posts.hasNext()}"
+      th:href="${site.url + '/page/' + (posts.page + 1)}"
+    />
+  </th:block>
+
+  <body>
+    <th:block th:fragment="content">
+      <th:block
+        th:with="
+          bannerMode=${theme.config?.home?.banner_mode ?: 'bar'},
+          bannerImage=${theme.config?.home?.banner_image ?: ''},
+          bannerTitle=${not #strings.isEmpty(theme.config?.home?.banner_title) ? theme.config.home.banner_title : site.title},
+          bannerSubtitle=${not #strings.isEmpty(theme.config?.home?.banner_subtitle) ? theme.config.home.banner_subtitle : site.subtitle},
+          cols=${(theme.config?.style?.layout_home ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_home},
+          hotMode=${theme.config?.home?.hot_posts_mode ?: 'off'},
+          listStyle='card',
+          spotlight=${theme.config?.style?.card_spotlight ?: true},
+          infinite=${theme.config?.style?.infinite_scroll ?: true}"
+      >
+        <!-- Banner：关闭 / 横幅 / 全屏 / 全屏透明 -->
+        <section
+          class="home-hero"
+          th:if="${bannerMode != 'off'}"
+          th:attr="data-mode=${bannerMode}"
+          th:classappend="${not #strings.isEmpty(bannerImage)} ? 'home-hero--image'"
+        >
+          <img
+            class="home-hero__bg"
+            th:if="${not #strings.isEmpty(bannerImage)}"
+            th:src="${bannerImage}"
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            fetchpriority="high"
+          />
+          <div class="home-hero__inner">
+            <h1 class="home-hero__title" th:text="${bannerTitle}">标题</h1>
+            <p
+              class="home-hero__subtitle"
+              th:if="${not #strings.isEmpty(bannerSubtitle)}"
+              th:text="${bannerSubtitle}"
+            ></p>
+          </div>
+        </section>
+
+        <div class="page-body">
+          <div class="wrap">
+            <div class="page-shell" th:attr="data-cols=${cols}">
+              <aside
+                class="page-aside page-aside--left"
+                th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+              ></aside>
+
+              <div
+                class="page-main"
+                th:attr="data-infinite=${infinite and posts.hasNext()} ? 'on' : null,data-next=${posts.hasNext() ? posts.nextUrl : null}"
+              >
+                <header class="surface home-intro" th:if="${bannerMode == 'off'}">
+                  <h1 class="page-title" th:text="${site.title}">站点标题</h1>
+                  <p
+                    class="page-desc"
+                    th:if="${not #strings.isEmpty(site.subtitle)}"
+                    th:text="${site.subtitle}"
+                  ></p>
+                </header>
+
+                <!-- 热门文章：关闭 / 固定 / 横向滚动 -->
+                <th:block
+                  th:if="${hotMode != 'off'}"
+                  th:with="hotPosts=${postFinder.list({page: 1, size: 8})}"
+                >
+                  <section class="surface hot" th:if="${not #lists.isEmpty(hotPosts.items)}">
+                    <div class="hot__head">
+                      <h2 class="hot__title">热门文章</h2>
+                    </div>
+
+                    <ul class="hot-grid" th:if="${hotMode == 'fixed'}">
+                      <li th:each="p : ${hotPosts.items}">
+                        <a
+                          th:href="@{${p.status.permalink}}"
+                          th:text="${p.spec.title}"
+                          th:title="${p.spec.title}"
+                        ></a>
+                      </li>
+                    </ul>
+
+                    <div class="hot-scroll" th:if="${hotMode == 'scroll'}">
+                      <div class="hot-scroll__track">
+                        <a
+                          class="hot-scroll__item"
+                          th:each="p : ${hotPosts.items}"
+                          th:href="@{${p.status.permalink}}"
+                          th:title="${p.spec.title}"
+                        >
+                          <span th:text="${p.spec.title}"></span>
+                        </a>
+                        <a
+                          class="hot-scroll__item"
+                          th:each="p : ${hotPosts.items}"
+                          th:href="@{${p.status.permalink}}"
+                          aria-hidden="true"
+                          tabindex="-1"
+                        >
+                          <span th:text="${p.spec.title}"></span>
+                        </a>
+                      </div>
+                    </div>
+                  </section>
+                </th:block>
+
+                <div data-infinite-container>
+                  <th:block
+                    th:if="${not #lists.isEmpty(posts.items)}"
+                    th:replace="~{modules/post-list :: list(posts=${posts.items})}"
+                  />
+                </div>
+
+                <p class="empty surface" th:if="${#lists.isEmpty(posts.items)}" th:text="#{list.empty}">还没有文章。</p>
+
+                <nav class="pager surface" th:if="${posts.hasPrevious() or posts.hasNext()}">
+                  <a th:if="${posts.hasPrevious()}" th:href="@{${posts.prevUrl}}" th:text="#{pagination.previous}">上一页</a>
+                  <span th:unless="${posts.hasPrevious()}"></span>
+                  <span
+                    class="pager__status"
+                    th:text="|${posts.page} / ${posts.totalPages}|"
+                  ></span>
+                  <a th:if="${posts.hasNext()}" th:href="@{${posts.nextUrl}}" th:text="#{pagination.next}">下一页</a>
+                  <span th:unless="${posts.hasNext()}"></span>
+                </nav>
+              </div>
+
+              <aside
+                class="page-aside page-aside--right"
+                th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+              ></aside>
+            </div>
+          </div>
+        </div>
+      </th:block>
+    </th:block>
+  </body>
+</html>

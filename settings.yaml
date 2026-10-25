@@ -1,0 +1,910 @@
+apiVersion: v1alpha1
+kind: Setting
+metadata:
+  name: strata-setting
+spec:
+  forms:
+    # ---------------- 外观 ----------------
+    - group: style
+      label: 外观
+      formSchema:
+        - $formkit: select
+          name: color_scheme
+          label: 默认配色
+          value: system
+          options:
+            - label: 跟随系统
+              value: system
+            - label: 浅色
+              value: light
+            - label: 深色
+              value: dark
+        - $formkit: color
+          name: accent_color
+          label: 强调色
+          value: "#2f6feb"
+          help: "推荐「跟随系统」：访客按系统设置自动匹配，不打扰浏览。"
+        - $formkit: switch
+          name: accent_reset
+          label: 恢复默认强调色
+          value: false
+          help: "打开后忽略上面的颜色，回到默认 #2f6feb；想继续自定义时关闭即可。"
+        - $formkit: select
+          name: light_bg
+          label: 浅色模式背景
+          value: paper
+          options:
+            - label: 纸白（推荐，降低刺眼感）
+              value: paper
+            - label: 纯白
+              value: pure
+            - label: 冷灰
+              value: cool
+            - label: 暖白
+              value: warm
+            - label: 主题色淡染（跟随强调色）
+              value: tint
+          help: "推荐「纸白」或「暖白」：纯白最亮，纸白、暖白的近白底色能明显降低刺眼感，同时让白色卡片浮起来，形成层次。"
+        - $formkit: number
+          name: light_bg_tint
+          label: 强调色混入比例（%）
+          value: 6
+          min: 0
+          max: 30
+          help: "仅「主题色淡染」生效。推荐 4%–8%：低于 4% 几乎看不出，高于 10% 页面会明显偏色。"
+        - $formkit: number
+          name: light_soften
+          label: 浅色模式柔和度（%）
+          value: 5
+          min: 0
+          max: 15
+          step: 1
+          help: "把强调色按比例混入浅色模式的页面、卡片与边框。推荐 5%–8%：默认 5% 已经比纯白柔和很多；0% 等于关闭，恢复纯白观感。"
+        - $formkit: number
+          name: light_card_dim
+          label: 降低卡片亮度（%）
+          value: 0
+          min: 0
+          max: 10
+          help: "推荐 0–4%：只把卡片这类白色表面压暗，页面底色不变。超过 8% 卡片会发灰、失去层次。"
+        - $formkit: switch
+          name: night_dim
+          label: 夜间自动调暗
+          value: false
+          help: "夜间时间段内把浅色模式整体再压暗一档，减少暗环境下的屏幕刺激。"
+        - $formkit: number
+          name: night_start
+          label: 夜间开始时间（点）
+          value: 20
+          min: 0
+          max: 23
+          help: "推荐 20 点（20:00）。24 小时制小时数。"
+        - $formkit: number
+          name: night_end
+          label: 夜间结束时间（点）
+          value: 6
+          min: 0
+          max: 23
+          help: "推荐 6 点（次日 06:00）。跨零点也支持。"
+        - $formkit: select
+          name: theme_switch_anim
+          label: 主题切换动画
+          value: circle
+          options:
+            - label: 圆形扩散
+              value: circle
+            - label: 淡入淡出
+              value: fade
+            - label: 立即切换
+              value: none
+          help: "「圆形扩散」以切换按钮为圆心向外扩散到新主题，推荐日常使用；低端设备或觉得动画多余时选「立即切换」。不支持 View Transitions 的浏览器会自动回退为立即切换。"
+        - $formkit: number
+          name: theme_switch_speed
+          label: 主题切换时长（ms）
+          value: 420
+          min: 120
+          max: 900
+          step: 20
+          help: "推荐 320–500ms，默认 420ms：足够看清扩散过程，又不会拖沓。120ms 接近瞬间，900ms 适合演示。对「立即切换」同样生效。"
+
+        - $formkit: switch
+          name: card_spotlight
+          label: 卡片跟随鼠标的高光
+          value: true
+        - $formkit: select
+          name: bg_effect
+          label: 背景动态效果
+          value: none
+          options:
+            - label: 关闭
+              value: none
+            - label: 星光
+              value: stars
+            - label: 动态电路
+              value: circuit
+            - label: 落叶
+              value: leaves
+          help: "黑白单色绘制；浅色 / 深色下自动调整明暗，系统开启「减少动态效果」时只画静态帧。"
+        - $formkit: switch
+          name: lightbox_animation
+          label: 图片灯箱淡入淡出
+          value: true
+          help: "关闭后灯箱瞬间打开/关闭；系统开启「减少动态效果」时始终不播放动画。"
+        - $formkit: number
+          name: lightbox_speed
+          label: 灯箱动画时长（ms）
+          value: 220
+          min: 80
+          max: 800
+          step: 20
+          help: "淡入淡出与缩放同时使用这个时长；80 表示几乎瞬间，800 表示很慢。"
+        - $formkit: switch
+          name: infinite_scroll
+          label: 列表滚动加载
+          value: true
+          help: "列表滚动加载有利于用户浏览；关闭后回退为传统分页链接。"
+        - $formkit: select
+          name: layout_columns
+          label: 默认布局
+          value: three
+          options: &layoutOptions
+            - label: 单栏
+              value: one
+            - label: 两栏
+              value: two
+            - label: 三栏
+              value: three
+          help: "未单独指定的页面使用此布局。"
+        - $formkit: select
+          name: layout_home
+          label: 首页布局
+          value: inherit
+          options: &layoutOverrides
+            - label: 跟随默认
+              value: inherit
+            - label: 单栏
+              value: one
+            - label: 两栏
+              value: two
+            - label: 三栏
+              value: three
+        - $formkit: select
+          name: layout_post
+          label: 文章页布局
+          value: one
+          options: *layoutOverrides
+          help: "默认单栏，让正文更醒目。"
+        - $formkit: select
+          name: layout_archive
+          label: 归档页布局
+          value: inherit
+          options: *layoutOverrides
+        - $formkit: select
+          name: layout_taxonomy
+          label: 分类 / 标签 / 作者页布局
+          value: inherit
+          options: *layoutOverrides
+        - $formkit: select
+          name: layout_page
+          label: 独立页面布局
+          value: inherit
+          options: *layoutOverrides
+        - $formkit: select
+          name: mobile_nav_animation
+          label: 移动端菜单动画
+          value: slide
+          options:
+            - label: 下滑展开
+              value: slide
+            - label: 淡入
+              value: fade
+            - label: 缩放
+              value: scale
+            - label: 无动画
+              value: "none"
+
+    # ---------------- 文章列表 ----------------
+    - group: font
+      label: 字体设置
+      formSchema:
+        - $formkit: select
+          name: font_family
+          label: 正文字体
+          value: inter
+          options:
+            - label: Inter（开源，中文回退系统字体）
+              value: inter
+            - label: 系统默认字体
+              value: system
+            - label: HarmonyOS Sans（华为开源，可商用）
+              value: harmony
+        - $formkit: text
+          name: font_url
+          label: 自定义字体地址（可选）
+          value: ""
+          help: "woff2 直链。填写后以 StrataCustom 家族加载；自托管 HarmonyOS Sans 时可填 /themes/strata/assets/fonts/HarmonyOS_Sans_SC.woff2。"
+        - $formkit: number
+          name: body_font_size
+          label: 正文字号（px）
+          value: 17
+          min: 14
+          max: 22
+          step: 1
+        - $formkit: number
+          name: body_line_height
+          label: 正文行高
+          value: 1.85
+          min: 1.4
+          max: 2.2
+          step: 0.05
+        - $formkit: select
+          name: code_font
+          label: 代码字体
+          value: jetbrains
+          options:
+            - label: JetBrains Mono（开源）
+              value: jetbrains
+            - label: 系统等宽字体
+              value: system
+
+    # ---------------- 首页 ----------------
+    - group: header
+      label: 导航栏
+      formSchema:
+        - $formkit: switch
+          name: search_enabled
+          label: 显示全局搜索
+          value: true
+          help: "依赖搜索插件 PluginSearchWidget，未启用时自动隐藏。"
+        - $formkit: switch
+          name: show_menu_icons
+          label: 显示菜单图标
+          value: true
+          help: "图标在「控制台 → 菜单」里为每个菜单项单独设置（Iconify 名称）；关闭后只显示文字。"
+        - $formkit: array
+          name: socials
+          label: 社交按钮
+          help: "建议不超过两个。图标填 Iconify 名称，例如 ri:github-fill、mdi:email-outline。"
+          value:
+            - icon: ri:github-fill
+              url: https://github.com/
+              label: GitHub
+            - icon: ri:mail-line
+              url: mailto:hello@example.com
+              label: 邮箱
+          itemLabels:
+            - type: "text"
+              label: "$value.label"
+          children:
+            - $formkit: text
+              name: icon
+              label: 图标
+              placeholder: "ri:github-fill"
+              help: "Iconify 名称，例如 ri:github-fill、ri:mail-line；也可填 https 地址或 data: 内联 SVG。"
+            - $formkit: text
+              name: url
+              label: 链接
+            - $formkit: text
+              name: label
+              label: 名称
+
+    # ---------------- 侧边栏 ----------------
+    - group: sidebar
+      label: 侧边栏
+      formSchema:
+        - $formkit: array
+          name: widgets
+          label: 侧边栏项目
+          help: "顺序即显示顺序；每项可选左侧或右侧。左侧栏只在三栏布局且 ≥1200px 时显示。"
+          value:
+            - type: profile
+              side: left
+            - type: categories
+              side: left
+            - type: stats
+              side: right
+            - type: tags
+              side: right
+            - type: browse
+              side: right
+          itemLabels:
+            - type: "text"
+              label: "$value.type"
+          children:
+            - $formkit: select
+              name: type
+              label: 类型
+              options:
+                - label: 个人信息
+                  value: profile
+                - label: 站点统计
+                  value: stats
+                - label: 文章分类
+                  value: categories
+                - label: 文章标签
+                  value: tags
+                - label: 浏览入口
+                  value: browse
+            - $formkit: select
+              name: side
+              label: 位置
+              options:
+                - label: 左侧
+                  value: left
+                - label: 右侧
+                  value: right
+        - $formkit: attachment
+          name: profile_avatar
+          label: 头像
+          value: ""
+          help: "留空使用站点 Logo；都没有时显示首字母。点击头像可放大查看。"
+        - $formkit: text
+          name: profile_name
+          label: 显示名称
+          value: ""
+          help: "留空使用站点标题。"
+        - $formkit: textarea
+          name: profile_bio
+          label: 简介
+          value: ""
+          help: "留空使用站点副标题。"
+        - $formkit: array
+          name: profile_socials
+          label: 个人社交 / 联系方式
+          help: "以图标展示在个人信息卡底部。填了二维码图片时点击放大二维码，否则作为链接打开。"
+          value:
+            - icon: ri:github-fill
+              url: https://github.com/
+              label: GitHub
+          itemLabels:
+            - type: "text"
+              label: "$value.label"
+          children:
+            - $formkit: text
+              name: icon
+              label: 图标
+              placeholder: "ri:github-fill"
+              help: "Iconify 名称，例如 ri:github-fill、ri:mail-line；也可填 https 地址或 data: 内联 SVG。"
+            - $formkit: text
+              name: label
+              label: 名称
+            - $formkit: text
+              name: url
+              label: 链接
+            - $formkit: attachment
+              name: qr
+              label: 二维码图片
+              help: "填写后点击图标会放大二维码，优先于链接。"
+        - $formkit: text
+          name: stats_start_date
+          label: 建站时间
+          value: ""
+          help: "格式 YYYY-MM-DD，用于统计卡片里的「运行时间」。留空则隐藏运行时间。"
+        - $formkit: switch
+          name: stats_word_count
+          label: 统计总字数
+          value: true
+          help: "文章很多时会增加渲染开销，可关闭。"
+
+    # ---------------- 文章 ----------------
+    - group: list
+      label: 文章列表
+      formSchema:
+        - $formkit: switch
+          name: cover_enabled
+          label: 显示文章封面
+          value: true
+          help: "仅对设置了封面的文章生效，没有封面的文章保持纯文字卡片。"
+        - $formkit: select
+          name: cover_position
+          label: 封面位置
+          value: left
+          options:
+            - label: 左侧
+              value: left
+            - label: 右侧
+              value: right
+            - label: 标题上方
+              value: top
+          help: "移动端会自动改为「标题上方」，避免文字过窄。"
+        - $formkit: select
+          name: cover_fit
+          label: 嵌入方式
+          value: inset
+          options:
+            - label: 小图内嵌（四周留白）
+              value: inset
+            - label: 无缝贴边（铺满卡片侧边）
+              value: flush
+        - $formkit: select
+          name: cover_size
+          label: 封面宽度
+          value: md
+          options:
+            - label: 小
+              value: sm
+            - label: 中
+              value: md
+            - label: 大
+              value: lg
+          help: "仅对左 / 右位置生效。"
+        - $formkit: select
+          name: cover_ratio
+          label: 封面比例
+          value: "4:3"
+          options:
+            - label: 16:9 宽幅
+              value: "16:9"
+            - label: 4:3 常规
+              value: "4:3"
+            - label: 1:1 方形
+              value: "1:1"
+        - $formkit: select
+          name: cover_fit_mode
+          label: 非常规比例封面的处理
+          value: auto
+          options:
+            - label: 自动（卡片高度跟随图片比例）
+              value: auto
+            - label: 裁剪填满
+              value: cover
+            - label: 完整显示（留白 + 模糊底）
+              value: contain
+          help: "自动：与设定比例相差超过 8% 时按图片自身比例显示，封面高度限制在 96–360px，卡片高度随之调整；裁剪填满：始终按设定比例裁剪；完整显示：留白并用同图模糊底填充。"
+        - $formkit: switch
+          name: cover_auto_height
+          label: 卡片高度随封面变化
+          value: true
+          help: "关闭后卡片高度由文字决定，封面裁切填满剩余高度。"
+        - $formkit: switch
+          name: cover_zoom
+          label: 悬停时封面轻微放大
+          value: true
+        - $formkit: switch
+          name: cover_avif
+          label: 封面优先使用 AVIF
+          value: false
+          help: "需要在上传目录中为封面生成同名 .avif 文件（可用 tools/png-to-avif.mjs 批量转换）。开启后，支持 AVIF 的浏览器会优先加载 .avif，缺失时保持原图。"
+
+# ---------------- 字体设置 ----------------
+    - group: home
+      label: 首页
+      formSchema:
+        - $formkit: select
+          name: banner_mode
+          label: 顶部 Banner
+          value: bar
+          options:
+            - label: 关闭
+              value: "off"
+            - label: 横幅
+              value: bar
+            - label: 全屏
+              value: full
+            - label: 全屏透明（页头浮于 Banner 之上）
+              value: full_transparent
+        - $formkit: text
+          name: banner_title
+          label: Banner 标题
+          value: ""
+          help: "留空使用站点标题。"
+        - $formkit: text
+          name: banner_subtitle
+          label: Banner 副标题
+          value: ""
+          help: "留空使用站点副标题。"
+        - $formkit: attachment
+          name: banner_image
+          label: Banner 背景图
+          value: ""
+        - $formkit: select
+          name: hot_posts_mode
+          label: 热门文章
+          value: "off"
+          options:
+            - label: 关闭
+              value: "off"
+            - label: 固定
+              value: fixed
+            - label: 横向滚动
+              value: scroll
+
+    # ---------------- 顶栏 ----------------
+    - group: post
+      label: 文章页
+      formSchema:
+        - $formkit: switch
+          name: show_toc
+          label: 显示文章目录
+          value: true
+          help: "文章出现 2 个以上小标题时才显示。"
+        - $formkit: select
+          name: toc_depth
+          label: 目录层数
+          value: "3"
+          options:
+            - label: 仅二级标题
+              value: "2"
+            - label: 二级 + 三级
+              value: "3"
+            - label: 二级 + 三级 + 四级
+              value: "4"
+          help: "决定目录中收录哪些标题层级。"
+        - $formkit: switch
+          name: show_reading_progress
+          label: 显示阅读进度条
+          value: true
+        - $formkit: switch
+          name: show_prev_next
+          label: 显示上一篇 / 下一篇
+          value: true
+        - $formkit: select
+          name: cover_banner
+          label: 文章封面
+          value: card
+          options:
+            - label: 关闭
+              value: "off"
+            - label: 卡片顶部（标题上方）
+              value: card
+          help: "开启后封面显示在文章卡片顶部、标题上方，与正文同一张卡片。"
+        - $formkit: switch
+          name: copyright_enabled
+          label: 文末版权声明
+          value: true
+        - $formkit: text
+          name: copyright_license
+          label: 许可协议名称
+          value: "CC BY-NC-SA 4.0"
+        - $formkit: text
+          name: copyright_license_url
+          label: 许可协议链接
+          value: "https://creativecommons.org/licenses/by-nc-sa/4.0/"
+        - $formkit: switch
+          name: reward_enabled
+          label: 文末赞赏
+          value: false
+        - $formkit: attachment
+          name: reward_wechat_image
+          label: 微信赞赏码
+          value: ""
+        - $formkit: text
+          name: reward_afdian_url
+          label: 爱发电链接
+          value: ""
+        - $formkit: attachment
+          name: reward_custom_image
+          label: 自定义赞赏图片
+          value: ""
+        - $formkit: text
+          name: reward_custom_url
+          label: 自定义赞赏链接
+          value: ""
+        - $formkit: text
+          name: reward_custom_label
+          label: 自定义赞赏名称
+          value: "赞赏"
+
+    # ---------------- 外链提醒 ----------------
+    - group: guestbook
+      label: 留言板
+      formSchema:
+        - $formkit: textarea
+          name: intro
+          label: 页面说明
+          value: ""
+          help: "显示在标题下方；留言板是独立页面，模板选择「留言板」，路径例如 /guestbook。"
+        - $formkit: textarea
+          name: tips
+          label: 留言须知
+          value: |-
+            请文明发言，勿发布广告、敏感或违法内容；
+            留言会经过审核后显示，请勿重复提交；
+            需要回复时请留下有效邮箱。
+          help: "支持 HTML；每行会显示为一句。"
+    # ---------------- 友情链接 ----------------
+    - group: profiles
+      label: 个人链接
+      formSchema:
+        - $formkit: textarea
+          name: intro
+          label: 页面引导文字
+          value: ""
+          help: "「个人链接」是独立页面，不在菜单里自动出现。配置步骤：① 控制台 → 页面 → 新建页面；② 内容留空即可；③ 「模板」选择「个人链接」；④ 「路径」自定义，例如 /links 或 /profiles；⑤ 保存发布后，可在「菜单」里添加该页面。本组的数据会自动渲染到使用该模板的页面上。"
+        - $formkit: switch
+          name: auto_preview
+          label: 自动获取预览图
+          value: true
+          help: "安装「链接预览」插件后，任意站点（含 B 站视频）都能自动取封面与简介；未安装时仅支持 GitHub（仓库取社交封面、用户取头像），其余回退标题占位。"
+        - $formkit: array
+          name: sections
+          label: 分类列表
+          value: []
+          itemLabels:
+            - type: "text"
+              label: "$value.title"
+          help: "这里的顺序就是页面上的分组顺序；不配置则平铺展示。"
+          children:
+            - $formkit: text
+              name: title
+              label: 分类名称
+              help: "例如「视频」「开源项目」"
+        - $formkit: array
+          name: items
+          label: 链接列表
+          value: []
+          itemLabels:
+            - type: "text"
+              label: "$value.title"
+          help: "创建页面时选择「个人链接」模板即可展示这些卡片。"
+          children:
+            - $formkit: text
+              name: title
+              label: 标题
+              help: "必填。没有封面时会取标题前两个字作为占位图。"
+            - $formkit: text
+              name: url
+              label: 链接
+            - $formkit: text
+              name: site
+              label: 网站
+              help: "例如 github.com"
+            - $formkit: text
+              name: platform
+              label: 平台
+              help: "例如 GitHub / 微信公众号 / 哔哩哔哩"
+            - $formkit: text
+              name: section
+              label: 分类
+              help: "相同名称的卡片会归到同一分类下，按出现顺序排列，建议把同分类条目相邻放置；留空归入「未分类」。"
+            - $formkit: textarea
+              name: description
+              label: 简介
+            - $formkit: attachment
+              name: cover
+              label: 封面
+              help: "留空时按上面的「自动获取预览图」尝试生成，仍无则用标题前两字占位。"
+            - $formkit: text
+              name: cover_url
+              label: 封面地址
+              help: "可直接粘贴网络图片地址（例如 B 站视频封面），优先于上传的封面。"
+            - $formkit: text
+              name: icon
+              label: 平台图标（可选）
+              placeholder: "ri:github-fill"
+              help: "Iconify 名称，例如 ri:github-fill、ri:bilibili-fill；也可填 https 地址。"
+    # ---------------- SEO ----------------
+    - group: friends
+      label: 友情链接
+      formSchema:
+        - $formkit: select
+          name: source
+          label: 友链数据源
+          value: settings
+          options:
+            - label: 主题设置
+              value: settings
+            - label: 链接管理插件
+              value: plugin
+            - label: 自动检测
+              value: auto
+          help: "默认读取下方列表。「自动检测」在检测到「链接管理」插件时读取插件数据；插件不可用时回退到下方列表。"
+        - $formkit: textarea
+          name: intro
+          label: 页面说明
+          value: ""
+          help: "显示在页面顶部。友情链接是独立页面：控制台 → 页面 → 新建 → 模板选「友情链接」→ 路径自定义（例如 /friends）→ 保存发布后加入菜单。"
+        - $formkit: textarea
+          name: guide
+          label: 申请流程说明
+          value: |-
+            1. 先把本站加入你的友链页面（名称、网址、简介、头像任选其一以上）；
+            2. 在本页底部填写并提交友链信息；
+            3. 站长审核通过后，链接会出现在上方列表中，一般 1–3 天内处理。
+          help: "纯文本，按行显示；每行会成为一个步骤。"
+        - $formkit: textarea
+          name: notice
+          label: 友链须知
+          value: |-
+            <ol><li><strong>基本要求</strong><br>网站内容健康、合法，不涉及黄赌毒、政治敏感、暴力或其他违反法律法规的内容。网站应非纯采集站或垃圾站点，且已稳定运行至少3个月以上。</li><li><strong>技术指标</strong><br>网站访问速度正常，无频繁宕机情况；建议具备HTTPS加密连接。</li><li><strong>交换原则</strong><br>请遵循<strong>先加后申</strong>流程，即先将本站链接添加至贵站友链页面后再提交申请。</li><li><strong>信息规范</strong><br>请提供准确的站点名称、站点描述、站点连接以及头像连接（如有）。</li><li><strong>审核与维护</strong><br>本站将定期审查友链有效性。若发现贵站链接失效、内容违规或长期未更新，本站有权移除链接而不另行通知。</li><li><strong>申请方式</strong><br>请通过邮件或本站友链页面提交申请，邮件标题请注明“友链申请-【您的网站名称】”。</li></ol>
+          help: "支持 HTML，可直接改成纯文本。"
+        - $formkit: textarea
+          name: disclaimer
+          label: 免责声明
+          value: |-
+            <ol><li><strong>独立性声明</strong><br>本网站所列友情链接仅为方便用户访问相关资源而提供，链接指向的网站均由第三方独立运营和维护。本网站与这些网站之间不存在任何隶属、合作或担保关系。</li><li><strong>内容责任</strong><br>本网站不对友情链接所指向网站的内容、准确性、合法性或安全性承担任何责任。用户访问这些链接时，应自行判断其内容的可靠性和适用性。</li><li><strong>链接变更</strong><br>友情链接可能因对方网站调整、关闭或其他原因而失效或变更。本网站不保证所有链接的长期有效性，亦不承担因链接失效而产生的任何责任。</li><li><strong>使用风险</strong><br>用户通过友情链接访问第三方网站时，应遵守相关法律法规，并注意网络安全。因访问第三方网站而产生的任何损失或纠纷，本网站不承担任何责任。</li><li><strong>移除权利</strong><br>本网站保留随时添加、修改或移除友情链接的权利，无需事先通知。如发现友情链接存在违法、不良或不适当内容，本网站将及时进行处理。</li><li><strong>建议与反馈</strong><br>如用户发现友情链接存在问题或有添加/移除建议，欢迎通过本网站提供的联系方式与我们沟通。</li></ol>
+          help: "支持 HTML，可直接改成纯文本。"
+        - $formkit: switch
+          name: notice_open
+          label: 友链须知默认展开
+          value: false
+          help: "关闭时页面加载后为折叠状态，访客点击标题展开。"
+        - $formkit: switch
+          name: disclaimer_open
+          label: 免责声明默认展开
+          value: false
+          help: "关闭时页面加载后为折叠状态。"
+        - $formkit: switch
+          name: submit_enabled
+          label: 显示友链申请表单
+          value: true
+          help: "表单提交会写入「评论」的待审核列表；需要站点在「系统设置 → 评论」中允许匿名评论，否则访客提交会被拒绝。"
+        - $formkit: array
+          name: items
+          label: 友链列表
+          value: []
+          help: "安装并启用「链接管理」插件后，可将上方「友链数据源」设为插件读取，此列表不再显示。"
+          itemLabels:
+            - type: "image"
+              label: "$value.avatar"
+            - type: "text"
+              label: "$value.name"
+          children:
+            - $formkit: text
+              name: name
+              label: 网页名称
+            - $formkit: text
+              name: url
+              label: 网页地址
+            - $formkit: attachment
+              name: avatar
+              label: 头像
+              help: "可上传，也可直接填写图片地址。"
+            - $formkit: textarea
+              name: description
+              label: 网页简介
+    # ---------------- 个人链接 ----------------
+    - group: external
+      label: 外链提醒
+      formSchema:
+        - $formkit: switch
+          name: external_enabled
+          label: 显示外链跳转提示
+          value: true
+        - $formkit: switch
+          name: external_new_window
+          label: 外链在新窗口打开
+          value: true
+        - $formkit: textarea
+          name: external_message
+          label: 提示内容
+          value: "你即将离开本站，前往外部站点。确认继续吗？"
+        - $formkit: number
+          name: external_delay
+          label: 自动跳转等待（秒）
+          value: 0
+          min: 0
+          max: 30
+          step: 1
+          help: "0 表示不自动跳转，必须手动确认。"
+        - $formkit: textarea
+          name: external_whitelist
+          label: 白名单（支持正则，每行一条）
+          value: "^https?://(www\\.)?(halo\\.run|github\\.com)"
+          help: "命中白名单的链接直接跳转，不弹提示。"
+
+    # ---------------- 性能 ----------------
+    - group: perf
+      label: 性能优化
+      formSchema:
+        - $formkit: switch
+          name: enable_preconnect
+          label: 预连接图标服务
+          value: true
+          help: "为 Iconify 图标服务提前建立连接，菜单与社交图标显示更快。"
+        - $formkit: switch
+          name: enable_lazy_images
+          label: 图片懒加载
+          value: true
+          help: "为正文、列表、卡片中的图片补上 loading=lazy 与 decoding=async。"
+        - $formkit: switch
+          name: enable_priority_image
+          label: 首屏封面优先加载
+          value: true
+          help: "列表第一篇文章的封面使用 fetchpriority=high，改善首屏 LCP。"
+        - $formkit: switch
+          name: enable_content_visibility
+          label: 列表渲染优化
+          value: true
+          help: "为列表卡片启用布局隔离（contain: layout），减少重排开销；不会裁剪卡片描边与阴影。"
+        - $formkit: switch
+          name: enable_prefetch
+          label: 链接预取
+          value: true
+          help: "鼠标悬停站内链接时预取目标页面，点击后打开更快。"
+        - $formkit: switch
+          name: enable_avif
+          label: 全站优先使用 AVIF
+          value: false
+          help: "对正文、封面、头像等所有图片探测同名 .avif 文件，存在则替换，缺失或加载失败时回退原图。需先用 tools/png-to-avif.mjs 生成 .avif。"
+        - $formkit: select
+          name: avif_mode
+          label: AVIF 探测策略
+          value: lazy
+          options:
+            - label: 不重复下载（仅替换尚未加载的图片）
+              value: lazy
+            - label: 全部替换（首屏可能多一次请求）
+              value: all
+          help: "浏览器会先按原图地址请求，脚本探测到 AVIF 后再替换。「不重复下载」对首屏与已开始加载的图片保留原图；「全部替换」首屏也换成 AVIF，但会多一次原图请求。"
+    # ---------------- 留言板 ----------------
+    - group: footer
+      label: 页脚设置
+      formSchema:
+        - $formkit: switch
+          name: show_copyright
+          label: 显示版权标识
+          value: true
+        - $formkit: text
+          name: copyright_text
+          label: 版权文案
+          value: ""
+          help: "留空显示「© 年份 站点标题」。"
+        - $formkit: switch
+          name: show_rss
+          label: 显示 RSS 入口
+          value: true
+        - $formkit: switch
+          name: show_sitemap
+          label: 显示 Sitemap 入口
+          value: true
+        - $formkit: switch
+          name: show_icp
+          label: 显示备案信息
+          value: true
+        - $formkit: text
+          name: icp
+          label: ICP 备案号
+          value: ""
+          help: "填写后显示为指向 beian.miit.gov.cn 的链接。"
+        - $formkit: switch
+          name: show_police
+          label: 显示公安联网备案
+          value: false
+          help: "依据《计算机信息网络国际联网安全保护管理办法》，已办理公安联网备案的网站应在首页底部展示备案编号并链接到备案系统。"
+        - $formkit: text
+          name: police_record
+          label: 公安联网备案号
+          value: ""
+          help: "填写备案号原文，例如「京公网安备 11000002000001 号」。"
+        - $formkit: text
+          name: police_record_url
+          label: 公安备案链接
+          value: ""
+          help: "在 beian.mps.gov.cn 备案通过后复制的查询链接，形如 https://beian.mps.gov.cn/#/query/webSearch?code=11000002000001；留空时自动按备案号拼装。"
+        - $formkit: switch
+          name: show_powered
+          label: 显示 Powered by Halo 与主题名称
+          value: true
+        - $formkit: textarea
+          name: footer_text
+          label: 页脚说明文字
+          value: ""
+
+    - group: seo
+      label: SEO
+      formSchema:
+        - $formkit: switch
+          name: enable_metadata
+          label: 输出 canonical 与社交分享标签
+          value: true
+          help: "包括 canonical 与 Open Graph 分享标签。若已由插件提供，可关闭以避免重复标签。"
+        - $formkit: switch
+          name: enable_structured_data
+          label: 输出文章结构化数据（BlogPosting）
+          value: true
+          help: "为文章页输出 schema.org 的 BlogPosting JSON-LD，有助于富媒体结果。"
+
+    # 自定义代码
+        - $formkit: textarea
+          name: custom_head
+          label: 自定义 head 代码
+          value: ""
+          rows: 10
+          help: "会原样插入到全站 <head> 末尾，可放 <style>、<link>、<script>。页面正文里的 <style> 会被 Halo 过滤，自定义页面的样式写在这里。"
+        - $formkit: textarea
+          name: custom_footer
+          label: 自定义页脚代码
+          value: ""
+          rows: 6
+          help: "会原样插入到 </body> 之前，适合放统计脚本或工具页的初始化代码。"

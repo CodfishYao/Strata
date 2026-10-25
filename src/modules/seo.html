@@ -1,0 +1,26 @@
+<!--
+  页面元数据：canonical + Open Graph
+  由 theme.config.seo.enable_metadata 控制；若已由插件提供，可在设置里关闭。
+-->
+<th:block th:fragment="meta(url, title, description, type, image)">
+  <th:block
+    th:if="${theme.config?.seo?.enable_metadata ?: true}"
+    th:with="absImage=${#strings.isEmpty(image) ? '' : (#strings.startsWith(image, 'http') ? image : site.url + image)}"
+  >
+    <link rel="canonical" th:href="${url}" />
+    <meta property="og:type" th:content="${type}" />
+    <meta property="og:site_name" th:content="${site.title}" />
+    <meta property="og:title" th:content="${title}" />
+    <meta property="og:url" th:content="${url}" />
+    <meta
+      property="og:description"
+      th:if="${not #strings.isEmpty(description)}"
+      th:content="${description}"
+    />
+    <meta
+      property="og:image"
+      th:if="${not #strings.isEmpty(absImage)}"
+      th:content="${absImage}"
+    />
+  </th:block>
+</th:block>

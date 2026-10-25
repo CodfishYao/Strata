@@ -1,0 +1,76 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${tag.spec.displayName} - ${site.title}|">标签归档</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${posts.page > 1 ? site.url + tag.status.permalink + '/page/' + posts.page : site.url + tag.status.permalink},
+        title=${tag.spec.displayName},
+        description=${''},
+        type='website',
+        image=${tag.spec.cover ?: site.logo})}"
+    />
+    <link
+      rel="prev"
+      th:if="${posts.hasPrevious()}"
+      th:href="${site.url + tag.status.permalink + (posts.page > 2 ? '/page/' + (posts.page - 1) : '')}"
+    />
+    <link
+      rel="next"
+      th:if="${posts.hasNext()}"
+      th:href="${site.url + tag.status.permalink + '/page/' + (posts.page + 1)}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="
+        cols=${(theme.config?.style?.layout_taxonomy ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_taxonomy},
+        infinite=${theme.config?.style?.infinite_scroll ?: true}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div
+              class="page-main"
+              th:attr="data-infinite=${infinite and posts.hasNext()} ? 'on' : null,data-next=${posts.hasNext() ? posts.nextUrl : null}"
+            >
+              <header class="surface page-head">
+                <div class="term-head">
+                  <h1 class="page-title" th:text="|# ${tag.spec.displayName}|">标签</h1>
+                  <span class="term-card__count" th:text="|${tag.postCount} 篇|"></span>
+                </div>
+              </header>
+
+              <p class="empty surface" th:if="${#lists.isEmpty(posts.items)}">
+                该标签下还没有文章。
+              </p>
+
+              <div data-infinite-container>
+                <th:block th:if="${not #lists.isEmpty(posts.items)}">
+                  <th:block th:replace="~{modules/post-list :: list(posts=${posts.items})}" />
+                </th:block>
+              </div>
+
+              <th:block th:replace="~{modules/pagination :: pager(result=${posts})}" />
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

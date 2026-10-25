@@ -1,0 +1,11 @@
+<nav
+  class="pager"
+  th:fragment="pager(result)"
+  th:if="${result.hasPrevious() or result.hasNext()}"
+>
+  <a th:if="${result.hasPrevious()}" th:href="@{${result.prevUrl}}" th:text="#{pagination.previous}">上一页</a>
+  <span th:unless="${result.hasPrevious()}"></span>
+  <span class="pager__status" th:text="|${result.page} / ${result.totalPages}|"></span>
+  <a th:if="${result.hasNext()}" th:href="@{${result.nextUrl}}" th:text="#{pagination.next}">下一页</a>
+  <span th:unless="${result.hasNext()}"></span>
+</nav>

@@ -1,0 +1,70 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${author.displayName} - ${site.title}|">作者</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${posts.page > 1 ? site.url + author.permalink + '/page/' + posts.page : site.url + author.permalink},
+        title=${author.displayName},
+        description=${author.bio},
+        type='website',
+        image=${author.avatar ?: site.logo})}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="
+        cols=${(theme.config?.style?.layout_taxonomy ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_taxonomy},
+        infinite=${theme.config?.style?.infinite_scroll ?: true}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div
+              class="page-main"
+              th:attr="data-infinite=${infinite and posts.hasNext()} ? 'on' : null,data-next=${posts.hasNext() ? posts.nextUrl : null}"
+            >
+              <header class="surface page-head">
+                <div class="term-head">
+                  <h1 class="page-title" th:text="${author.displayName}">作者</h1>
+                </div>
+                <p
+                  class="page-desc"
+                  th:if="${not #strings.isEmpty(author.bio)}"
+                  th:text="${author.bio}"
+                ></p>
+              </header>
+
+              <p class="empty surface" th:if="${#lists.isEmpty(posts.items)}">
+                该作者还没有文章。
+              </p>
+
+              <div data-infinite-container>
+                <th:block th:if="${not #lists.isEmpty(posts.items)}">
+                  <th:block th:replace="~{modules/post-list :: list(posts=${posts.items})}" />
+                </th:block>
+              </div>
+
+              <th:block th:replace="~{modules/pagination :: pager(result=${posts})}" />
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

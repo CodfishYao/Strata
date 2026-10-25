@@ -1,0 +1,120 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${singlePage.spec.title} - ${site.title}|">个人链接</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${site.url + singlePage.status.permalink},
+        title=${singlePage.spec.title},
+        description=${singlePage.status.excerpt},
+        type='article',
+        image=${site.logo})}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="cols=${(theme.config?.style?.layout_page ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_page},
+               items=${theme.config?.profiles?.items},
+               sections=${theme.config?.profiles?.sections},
+               intro=${theme.config?.profiles?.intro ?: ''},
+               autoPreview=${theme.config?.profiles?.auto_preview ?: true},
+               hasSections=${sections != null and not #lists.isEmpty(sections)}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div class="page-main">
+              <header class="surface page-head">
+                <h1 class="page-title" th:text="${singlePage.spec.title}">个人链接</h1>
+                <p
+                  class="page-desc"
+                  th:if="${not #strings.isEmpty(intro)}"
+                  th:text="${intro}"
+                ></p>
+              </header>
+
+              <div
+                class="prose"
+                th:if="${not #strings.isEmpty(singlePage.content.content)}"
+                th:utext="${singlePage.content.content}"
+              ></div>
+
+              <div
+                class="link-groups"
+                th:if="${items != null and not #lists.isEmpty(items)}"
+                th:attr="data-auto-preview=${autoPreview} ? 'on' : null,
+                         data-preview-endpoint=${pluginFinder.available('plugin-link-preview')} ? '/link-preview' : null"
+              >
+                <!-- 已定义的分类：每个分类一个独立网格，顺序由「分类列表」决定 -->
+                <section
+                  class="link-group"
+                  th:each="sec : ${sections}"
+                  th:if="${hasSections and not #strings.isEmpty(sec.title)}"
+                >
+                  <h2 class="link-group__title" th:text="${sec.title}"></h2>
+                  <div class="link-grid">
+                    <th:block
+                      th:each="item : ${items}"
+                      th:if="${not #strings.isEmpty(item.title) and item.section == sec.title}"
+                    >
+                      <th:block th:replace="~{modules/link-card :: card(item=${item})}" />
+                    </th:block>
+                  </div>
+                </section>
+
+                <!-- 未匹配到任何分类的条目 -->
+                <section class="link-group" th:if="${hasSections}">
+                  <h2 class="link-group__title">未分类</h2>
+                  <div class="link-grid">
+                    <th:block
+                      th:each="item : ${items}"
+                      th:if="${not #strings.isEmpty(item.title) and (#strings.isEmpty(item.section) or not #lists.contains(sections.![title], item.section))}"
+                    >
+                      <th:block th:replace="~{modules/link-card :: card(item=${item})}" />
+                    </th:block>
+                  </div>
+                </section>
+
+                <!-- 没有配置分类时：平铺展示 -->
+                <section class="link-group" th:unless="${hasSections}">
+                  <div class="link-grid">
+                    <th:block
+                      th:each="item : ${items}"
+                      th:if="${not #strings.isEmpty(item.title)}"
+                    >
+                      <th:block th:replace="~{modules/link-card :: card(item=${item})}" />
+                    </th:block>
+                  </div>
+                </section>
+              </div>
+
+              <p
+                class="empty surface"
+                th:if="${items == null or #lists.isEmpty(items)}"
+              >
+还没有配置链接。请在「控制台 → 主题 → Strata → 设置 → 个人链接」中添加；
+                本页路径为 <code th:text="${singlePage.status.permalink}">/profiles</code>，
+                可到「菜单」里把它加进导航。
+              </p>
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

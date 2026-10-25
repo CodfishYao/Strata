@@ -1,0 +1,38 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|出错了 - ${site.title}|">出错了</title>
+    <meta name="robots" content="noindex" />
+  </th:block>
+
+  <body>
+    <th:block th:fragment="content">
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" data-cols="one">
+            <div class="page-main">
+              <section class="surface error-page">
+                <p class="error-page__code" th:text="${error.status}">500</p>
+                <h1
+                  class="error-page__title"
+                  th:text="${#strings.defaultString(error.title, '服务暂时不可用')}"
+                >服务暂时不可用</h1>
+                <p
+                  class="error-page__desc"
+                  th:if="${not #strings.isEmpty(error.detail)}"
+                  th:text="${error.detail}"
+                ></p>
+                <div class="error-page__actions">
+                  <a class="btn btn--primary" th:href="@{/}">回到首页</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

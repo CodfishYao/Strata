@@ -1,0 +1,36 @@
+{
+  "name": "halo-theme-strata",
+  "version": "1.2.0",
+  "private": true,
+  "author": "CodfishYao (yaohaolin.cn)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "avif": "node tools/png-to-avif.mjs",
+    "clean:images": "node tools/clean-image-params.mjs",
+    "build": "tsc && vp build && node tools/sync-custom-templates.mjs && theme-package",
+    "build-only": "tsc && vp build && node tools/sync-custom-templates.mjs",
+    "dev": "vp build --watch",
+    "check": "vp check --fix",
+    "prepare": "vp config",
+    "skills:update": "npx skills update"
+  },
+  "devDependencies": {
+    "@halo-dev/theme-package-cli": "1.0.1",
+    "@halo-dev/vite-plugin-halo-theme": "1.0.3",
+    "@types/node": "18.11.9",
+    "sharp": "^0.35.5",
+    "typescript": "5.9.3",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.1.19",
+    "vite-plus": "0.1.19"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "overrides": {
+      "vite": "npm:@voidzero-dev/vite-plus-core@0.1.19"
+    }
+  }
+}

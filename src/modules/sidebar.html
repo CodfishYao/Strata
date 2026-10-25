@@ -1,0 +1,174 @@
+<th:block th:fragment="items(side, offset)">
+  <th:block
+    th:with="cfg=${theme.config?.sidebar}, widgets=${theme.config?.sidebar?.widgets}"
+  >
+    <th:block th:each="w, s : ${widgets}">
+      <th:block th:if="${w.side == side}" th:with="pos=${offset + s.index}">
+        <!-- 个人信息 -->
+        <section
+          class="aside-block profile"
+          th:if="${w.type == 'profile'}"
+          th:style="|order:${pos}|"
+          th:with="avatar=${cfg?.profile_avatar ?: site.logo},
+                   name=${not #strings.isEmpty(cfg?.profile_name) ? cfg.profile_name : site.title},
+                   bio=${not #strings.isEmpty(cfg?.profile_bio) ? cfg.profile_bio : site.subtitle}"
+        >
+          <div class="profile__head">
+            <img
+              class="profile__avatar"
+              th:if="${not #strings.isEmpty(avatar)}"
+              th:src="${avatar}"
+              th:alt="${name}"
+              loading="lazy"
+            />
+            <span
+              class="profile__avatar--fallback"
+              th:unless="${not #strings.isEmpty(avatar)}"
+              th:text="${#strings.substring(name, 0, 1)}"
+            ></span>
+            <div class="profile__body">
+              <p class="profile__name" th:text="${name}"></p>
+              <p class="profile__bio" th:if="${not #strings.isEmpty(bio)}" th:text="${bio}"></p>
+            </div>
+          </div>
+
+          <ul
+            class="profile__links"
+            th:if="${cfg?.profile_socials != null and not #lists.isEmpty(cfg.profile_socials)}"
+          >
+            <li th:each="s : ${cfg.profile_socials}" th:if="${not #strings.isEmpty(s.icon)}">
+              <!-- 有二维码：点击放大二维码；否则作为普通链接 -->
+              <button
+                class="profile__link"
+                type="button"
+                th:if="${not #strings.isEmpty(s.qr)}"
+                th:attr="data-lightbox-src=${s.qr},aria-label=|查看 ${s.label ?: '二维码'}|,title=${s.label ?: '二维码'}"
+              >
+                <span
+                  class="social-btn__icon"
+                  th:with="iconUrl=${#strings.startsWith(s.icon, 'http') or #strings.startsWith(s.icon, 'data:') or #strings.startsWith(s.icon, '<svg') ? s.icon : 'https://api.iconify.design/' + #strings.replace(s.icon, ':', '/') + '.svg'}"
+                th:style="|--ink-icon:url('${iconUrl}')|"
+                ></span>
+              </button>
+              <a
+                class="profile__link"
+                th:unless="${not #strings.isEmpty(s.qr)}"
+                th:href="${s.url ?: '#'}"
+                th:attr="aria-label=${s.label ?: '社交链接'},
+                         title=${s.label ?: ''},
+                         target=${#strings.startsWith(s.url ?: '', 'http')} ? '_blank' : null,
+                         rel=${#strings.startsWith(s.url ?: '', 'http')} ? 'noopener noreferrer' : null"
+              >
+                <span
+                  class="social-btn__icon"
+                  th:with="iconUrl=${#strings.startsWith(s.icon, 'http') or #strings.startsWith(s.icon, 'data:') or #strings.startsWith(s.icon, '<svg') ? s.icon : 'https://api.iconify.design/' + #strings.replace(s.icon, ':', '/') + '.svg'}"
+                th:style="|--ink-icon:url('${iconUrl}')|"
+                ></span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- 站点统计 -->
+        <section
+          class="aside-block"
+          th:if="${w.type == 'stats'}"
+          th:style="|order:${pos}|"
+          th:with="st=${siteStatsFinder.getStats()},
+                   allTags=${tagFinder.listAll()},
+                   allPosts=${postFinder.listAll()}"
+        >
+          <h2 class="aside-block__title">站点统计</h2>
+          <div class="stats">
+            <div class="stats__item">
+              <span class="stats__value" th:text="${st.post}">0</span>
+              <span class="stats__label">文章</span>
+            </div>
+            <div class="stats__item">
+              <span class="stats__value" th:text="${#lists.size(allTags.?[postCount > 0])}">0</span>
+              <span class="stats__label">标签</span>
+            </div>
+            <div class="stats__item" th:if="${theme.config?.sidebar?.stats_word_count ?: true}">
+              <span class="stats__value" data-word-total>—</span>
+              <span class="stats__label">字数</span>
+              <span hidden>
+                <span
+                  th:each="p : ${allPosts}"
+                  data-word-len
+                  th:attr="data-word-name=${p.metadata.name}"
+                  th:with="wcText=${T(org.jsoup.Jsoup).parse(postFinder.content(p.metadata.name)?.content ?: '').text()}"
+                  th:text="${#strings.length(wcText.replaceAll('[^一-鿿]', '')) + (wcText.replaceAll('[一-鿿]', ' ').replaceAll('[^A-Za-z0-9]+', ' ').trim().isEmpty() ? 0 : wcText.replaceAll('[一-鿿]', ' ').replaceAll('[^A-Za-z0-9]+', ' ').trim().split(' ').length)}"
+                ></span>
+              </span>
+            </div>
+            <div class="stats__item">
+              <span class="stats__value" th:text="${st.comment}">0</span>
+              <span class="stats__label">评论</span>
+            </div>
+            <div class="stats__item">
+              <span class="stats__value" th:text="${st.visit}">0</span>
+              <span class="stats__label">访问</span>
+            </div>
+            <div class="stats__item" th:if="${not #strings.isEmpty(cfg?.stats_start_date)}">
+              <span class="stats__value">
+                <span data-uptime th:attr="data-start=${cfg.stats_start_date}">—</span><span
+                  class="stats__unit"
+                  >天</span
+                >
+              </span>
+              <span class="stats__label">运行</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 分类 -->
+        <section
+          class="aside-block"
+          th:if="${w.type == 'categories'}"
+          th:style="|order:${pos}|"
+        >
+          <h2 class="aside-block__title">分类</h2>
+          <ul class="aside-list">
+            <li th:each="cat : ${categoryFinder.listAll()}">
+              <a th:href="@{${cat.status.permalink}}">
+                <span th:text="${cat.spec.displayName}"></span>
+                <span class="count" th:text="${cat.postCount}"></span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- 标签 -->
+        <section
+          class="aside-block"
+          th:if="${w.type == 'tags'}"
+          th:style="|order:${pos}|"
+        >
+          <h2 class="aside-block__title">标签</h2>
+          <ul class="tag-cloud">
+            <li th:each="tag : ${tagFinder.listAll()}" th:if="${tag.postCount > 0}">
+              <a class="tag-chip" th:href="@{${tag.status.permalink}}">
+                <span th:text="${tag.spec.displayName}"></span>
+                <span th:text="${tag.postCount}"></span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- 浏览入口 -->
+        <section
+          class="aside-block"
+          th:if="${w.type == 'browse'}"
+          th:style="|order:${pos}|"
+        >
+          <h2 class="aside-block__title">浏览</h2>
+          <ul class="aside-list">
+            <li><a th:href="@{/archives}">全部文章</a></li>
+            <li><a th:href="@{${site.routes.categoriesUri}}">全部分类</a></li>
+            <li><a th:href="@{${site.routes.tagsUri}}">全部标签</a></li>
+          </ul>
+        </section>
+      </th:block>
+    </th:block>
+  </th:block>
+</th:block>

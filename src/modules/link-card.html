@@ -1,0 +1,57 @@
+<!-- 单个链接卡片，供个人链接页的分类分组复用 -->
+<a
+  th:fragment="card(item)"
+  class="link-card"
+  th:href="${item.url ?: '#'}"
+  target="_blank"
+  rel="noopener noreferrer"
+  th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null,
+           data-url=${item.url ?: ''}"
+>
+  <div class="link-card__cover">
+    <span
+      class="link-card__initial"
+      th:text="${#strings.substring(item.title, 0, (#strings.length(item.title) >= 2 ? 2 : 1))}"
+    ></span>
+    <img
+      th:if="${not #strings.isEmpty(item.cover_url)}"
+      th:src="${item.cover_url}"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+    />
+    <img
+      th:if="${#strings.isEmpty(item.cover_url) and not #strings.isEmpty(item.cover)}"
+      th:src="${item.cover}"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+    />
+  </div>
+
+  <div class="link-card__body">
+    <h3 class="link-card__title" th:text="${item.title}"></h3>
+    <p
+      class="link-card__meta"
+      th:if="${not #strings.isEmpty(item.platform) or not #strings.isEmpty(item.site)}"
+    >
+      <span th:if="${not #strings.isEmpty(item.platform)}" th:text="${item.platform}"></span>
+      <span th:if="${not #strings.isEmpty(item.site)}" th:text="${item.site}"></span>
+    </p>
+    <p
+      class="link-card__desc"
+      th:if="${not #strings.isEmpty(item.description)}"
+      th:text="${item.description}"
+    ></p>
+  </div>
+
+  <span class="link-card__icon" th:if="${not #strings.isEmpty(item.icon)}">
+    <span
+      class="social-btn__icon"
+      th:with="iconUrl=${#strings.startsWith(item.icon, 'http') or #strings.startsWith(item.icon, 'data:') or #strings.startsWith(item.icon, '<svg') ? item.icon : 'https://api.iconify.design/' + #strings.replace(item.icon, ':', '/') + '.svg'}"
+                th:style="|--ink-icon:url('${iconUrl}')|"
+    ></span>
+  </span>
+</a>

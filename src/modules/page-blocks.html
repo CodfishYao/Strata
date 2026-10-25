@@ -1,0 +1,237 @@
+<!--
+  页面区块：供空白页面 / 空白文章按需插入已有卡片。
+  由页面/文章的元数据 blocks 控制，逗号分隔：
+  profile, stats, copyright, reward
+-->
+
+<th:block th:fragment="render(blocks)">
+  <div class="page-blocks" th:if="${not #strings.isEmpty(blocks)}">
+    <th:block
+      th:with="normalized=${#strings.replace(#strings.replace(#strings.replace(blocks, '，', ','), '、', ','), '；', ',')}"
+    >
+      <th:block th:each="raw : ${#strings.arraySplit(normalized, ',')}" th:with="key=${#strings.trim(raw)}">
+        <th:block th:if="${key == 'profile'}">
+          <th:block th:replace="~{modules/page-blocks :: profile}" />
+        </th:block>
+        <th:block th:if="${key == 'stats'}">
+          <th:block th:replace="~{modules/page-blocks :: stats}" />
+        </th:block>
+        <th:block th:if="${key == 'copyright'}">
+          <th:block th:replace="~{modules/page-blocks :: copyright}" />
+        </th:block>
+        <th:block th:if="${key == 'reward'}">
+          <th:block th:replace="~{modules/page-blocks :: reward}" />
+        </th:block>
+      </th:block>
+    </th:block>
+  </div>
+</th:block>
+
+<th:block th:fragment="profile">
+  <section
+    class="surface page-block profile"
+    th:with="cfg=${theme.config?.sidebar},
+             avatar=${cfg?.profile_avatar ?: site.logo},
+             name=${not #strings.isEmpty(cfg?.profile_name) ? cfg.profile_name : site.title},
+             bio=${not #strings.isEmpty(cfg?.profile_bio) ? cfg.profile_bio : site.subtitle}"
+    th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+  >
+    <div class="profile__head">
+      <img
+        class="profile__avatar"
+        th:if="${not #strings.isEmpty(avatar)}"
+        th:src="${avatar}"
+        th:alt="${name}"
+        loading="lazy"
+      />
+      <span
+        class="profile__avatar--fallback"
+        th:unless="${not #strings.isEmpty(avatar)}"
+        th:text="${#strings.substring(name, 0, 1)}"
+      ></span>
+      <div class="profile__body">
+        <p class="profile__name" th:text="${name}"></p>
+        <p class="profile__bio" th:if="${not #strings.isEmpty(bio)}" th:text="${bio}"></p>
+      </div>
+    </div>
+
+    <ul
+      class="profile__links"
+      th:if="${cfg?.profile_socials != null and not #lists.isEmpty(cfg.profile_socials)}"
+    >
+      <li th:each="s : ${cfg.profile_socials}" th:if="${not #strings.isEmpty(s.icon)}">
+        <button
+          class="profile__link"
+          type="button"
+          th:if="${not #strings.isEmpty(s.qr)}"
+          th:attr="data-lightbox-src=${s.qr},aria-label=|查看 ${s.label ?: '二维码'}|,title=${s.label ?: '二维码'}"
+        >
+          <span
+            class="social-btn__icon"
+            th:with="iconUrl=${#strings.startsWith(s.icon, 'http') or #strings.startsWith(s.icon, 'data:') or #strings.startsWith(s.icon, '<svg') ? s.icon : 'https://api.iconify.design/' + #strings.replace(s.icon, ':', '/') + '.svg'}"
+                th:style="|--ink-icon:url('${iconUrl}')|"
+          ></span>
+        </button>
+        <a
+          class="profile__link"
+          th:unless="${not #strings.isEmpty(s.qr)}"
+          th:href="${s.url ?: '#'}"
+          th:attr="aria-label=${s.label ?: '社交链接'},
+                   title=${s.label ?: ''},
+                   target=${#strings.startsWith(s.url ?: '', 'http')} ? '_blank' : null,
+                   rel=${#strings.startsWith(s.url ?: '', 'http')} ? 'noopener noreferrer' : null"
+        >
+          <span
+            class="social-btn__icon"
+            th:with="iconUrl=${#strings.startsWith(s.icon, 'http') or #strings.startsWith(s.icon, 'data:') or #strings.startsWith(s.icon, '<svg') ? s.icon : 'https://api.iconify.design/' + #strings.replace(s.icon, ':', '/') + '.svg'}"
+                th:style="|--ink-icon:url('${iconUrl}')|"
+          ></span>
+        </a>
+      </li>
+    </ul>
+  </section>
+</th:block>
+
+<th:block th:fragment="stats">
+  <section
+    class="surface page-block"
+    th:with="st=${siteStatsFinder.getStats()},
+             allTags=${tagFinder.listAll()},
+             allPosts=${postFinder.listAll()},
+             cfg=${theme.config?.sidebar}"
+    th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+  >
+    <h2 class="aside-block__title">站点统计</h2>
+    <div class="stats">
+      <div class="stats__item">
+        <span class="stats__value" th:text="${st.post}">0</span>
+        <span class="stats__label">文章</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value" th:text="${#lists.size(allTags.?[postCount > 0])}">0</span>
+        <span class="stats__label">标签</span>
+      </div>
+      <div class="stats__item" th:if="${theme.config?.sidebar?.stats_word_count ?: true}">
+        <span class="stats__value" data-word-total>—</span>
+        <span class="stats__label">字数</span>
+        <span hidden>
+          <span
+            th:each="p : ${allPosts}"
+            data-word-len
+            th:attr="data-word-name=${p.metadata.name}"
+            th:with="wcText=${T(org.jsoup.Jsoup).parse(postFinder.content(p.metadata.name)?.content ?: '').text()}"
+            th:text="${#strings.length(wcText.replaceAll('[^一-鿿]', '')) + (wcText.replaceAll('[一-鿿]', ' ').replaceAll('[^A-Za-z0-9]+', ' ').trim().isEmpty() ? 0 : wcText.replaceAll('[一-鿿]', ' ').replaceAll('[^A-Za-z0-9]+', ' ').trim().split(' ').length)}"
+          ></span>
+        </span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value" th:text="${st.comment}">0</span>
+        <span class="stats__label">评论</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__value" th:text="${st.visit}">0</span>
+        <span class="stats__label">访问</span>
+      </div>
+      <div class="stats__item" th:if="${not #strings.isEmpty(cfg?.stats_start_date)}">
+        <span class="stats__value">
+          <span data-uptime th:attr="data-start=${cfg.stats_start_date}">—</span><span
+            class="stats__unit"
+            >天</span
+          >
+        </span>
+        <span class="stats__label">运行</span>
+      </div>
+    </div>
+  </section>
+</th:block>
+
+<th:block th:fragment="copyright">
+  <section
+    class="surface post-tail__card"
+    th:with="licenseName=${not #strings.isEmpty(theme.config?.post?.copyright_license) ? theme.config.post.copyright_license : 'CC BY-NC-SA 4.0'},
+             licenseUrl=${not #strings.isEmpty(theme.config?.post?.copyright_license_url) ? theme.config.post.copyright_license_url : 'https://creativecommons.org/licenses/by-nc-sa/4.0/'}"
+    th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+  >
+    <div class="post-tail__head">
+      <span class="post-tail__title">版权声明</span>
+      <span class="cc-badge" th:if="${#strings.containsIgnoreCase(licenseName, 'cc')}" aria-label="知识共享许可">
+        <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons.svg')|"></span>
+        <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-by.svg')|"></span>
+        <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-nc.svg')|"></span>
+        <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-sa.svg')|"></span>
+      </span>
+    </div>
+    <p class="post-tail__text">
+      本文采用
+      <a
+        th:href="${licenseUrl}"
+        target="_blank"
+        rel="noopener noreferrer license"
+        th:text="|「${licenseName}」|"
+      ></a>
+      许可协议。转载请注明作者与原文链接。
+    </p>
+  </section>
+</th:block>
+
+<th:block th:fragment="reward">
+  <th:block
+    th:with="wechat=${theme.config?.post?.reward_wechat_image ?: ''},
+             afdian=${theme.config?.post?.reward_afdian_url ?: ''},
+             customUrl=${theme.config?.post?.reward_custom_url ?: ''},
+             customImage=${theme.config?.post?.reward_custom_image ?: ''},
+             customLabel=${not #strings.isEmpty(theme.config?.post?.reward_custom_label) ? theme.config.post.reward_custom_label : '赞赏码'}"
+  >
+  <section
+    class="surface post-tail__card"
+    th:if="${not #strings.isEmpty(wechat) or not #strings.isEmpty(afdian) or not #strings.isEmpty(customUrl) or not #strings.isEmpty(customImage)}"
+    th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+  >
+    <div class="post-tail__head">
+      <span class="post-tail__title">赞赏</span>
+      <span class="post-tail__meta">觉得有用的话，支持一下作者</span>
+    </div>
+    <div class="post-support">
+      <div class="post-support__actions">
+        <button
+          type="button"
+          class="post-action post-action--support"
+          th:if="${not #strings.isEmpty(wechat)}"
+          th:attr="data-lightbox-src=${wechat}"
+          aria-label="微信赞赏"
+        >
+          <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/wechat-fill.svg')|" aria-hidden="true"></span>
+        </button>
+        <a
+          class="post-action post-action--support"
+          th:if="${not #strings.isEmpty(afdian)}"
+          th:href="${afdian}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="爱发电"
+        >
+          <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/simple-icons/afdian.svg')|" aria-hidden="true"></span>
+        </a>
+        <button
+          type="button"
+          class="post-action post-action--support"
+          th:if="${not #strings.isEmpty(customImage)}"
+          th:attr="data-lightbox-src=${customImage},aria-label=${customLabel}"
+        >
+          <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/qr-code-line.svg')|" aria-hidden="true"></span>
+        </button>
+        <a
+          class="post-action post-action--support"
+          th:if="${not #strings.isEmpty(customUrl)}"
+          th:href="${customUrl}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="赞赏链接"
+        >
+          <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/heart-3-line.svg')|" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+  </section>
+  </th:block>
+</th:block>

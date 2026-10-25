@@ -1,0 +1,236 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${singlePage.spec.title} - ${site.title}|">友情链接</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${site.url + singlePage.status.permalink},
+        title=${singlePage.spec.title},
+        description=${singlePage.status.excerpt},
+        type='article',
+        image=${site.logo})}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="cols=${(theme.config?.style?.layout_page ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_page},
+               friends=${theme.config?.friends?.items},
+               friendSource=${theme.config?.friends?.source ?: 'settings'},
+               pluginFinder=${friendSource == 'settings' ? null : #ctx.getVariable('linkFinder')},
+               pluginCount=${pluginFinder != null ? (pluginFinder.count() ?: 0) : 0},
+               pluginGroups=${pluginFinder != null ? pluginFinder.groupBy() : null},
+               intro=${theme.config?.friends?.intro ?: ''},
+               guide=${theme.config?.friends?.guide ?: ''},
+               notice=${theme.config?.friends?.notice ?: ''},
+               disclaimer=${theme.config?.friends?.disclaimer ?: ''},
+               submitEnabled=${theme.config?.friends?.submit_enabled ?: true}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div class="page-main">
+              <header class="surface page-head">
+                <h1 class="page-title" th:text="${singlePage.spec.title}">友情链接</h1>
+                <p
+                  class="page-desc"
+                  th:if="${not #strings.isEmpty(intro)}"
+                  th:text="${intro}"
+                ></p>
+              </header>
+
+
+              <!-- 安装了「链接管理」插件时，友链读取插件数据，按分组展示 -->
+              <th:block th:if="${pluginCount != null and pluginCount > 0}">
+                <section
+                  class="friend-group"
+                  th:each="group : ${pluginGroups}"
+                  th:if="${group.links != null and not #lists.isEmpty(group.links)}"
+                >
+                  <h2
+                    class="friend-group__title"
+                    th:if="${not #strings.isEmpty(group.spec?.displayName)}"
+                    th:text="${group.spec.displayName}"
+                  ></h2>
+                  <div class="friend-grid">
+                    <a
+                      class="friend-card"
+                      th:each="link : ${group.links}"
+                      th:if="${not #strings.isEmpty(link.spec?.displayName)}"
+                      th:href="${link.spec.url ?: '#'}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+                    >
+                      <span class="friend-card__avatar">
+                        <span
+                          class="friend-card__initial"
+                          th:text="${#strings.substring(link.spec.displayName, 0, 1)}"
+                        ></span>
+                        <img
+                          th:if="${not #strings.isEmpty(link.spec.logo)}"
+                          th:src="${link.spec.logo}"
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          referrerpolicy="no-referrer"
+                        />
+                      </span>
+                      <div class="friend-card__body">
+                        <h3 class="friend-card__name" th:text="${link.spec.displayName}"></h3>
+                        <p
+                          class="friend-card__url"
+                          th:text="${#strings.replace(#strings.replace(link.spec.url ?: '', 'https://', ''), 'http://', '')}"
+                        ></p>
+                        <p
+                          class="friend-card__desc"
+                          th:if="${not #strings.isEmpty(link.spec.description)}"
+                          th:text="${link.spec.description}"
+                        ></p>
+                      </div>
+                    </a>
+                  </div>
+                </section>
+              </th:block>
+
+              <!-- 未安装插件时，读取主题设置中的友链列表 -->
+              <th:block th:if="${pluginCount == null or pluginCount == 0}">
+                <div class="friend-grid" th:if="${friends != null and not #lists.isEmpty(friends)}">
+                  <a
+                    class="friend-card"
+                    th:each="friend : ${friends}"
+                    th:if="${not #strings.isEmpty(friend.name)}"
+                    th:href="${friend.url ?: '#'}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null"
+                  >
+                    <span class="friend-card__avatar">
+                      <span
+                        class="friend-card__initial"
+                        th:text="${#strings.substring(friend.name, 0, 1)}"
+                      ></span>
+                      <img
+                        th:if="${not #strings.isEmpty(friend.avatar)}"
+                        th:src="${friend.avatar}"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        referrerpolicy="no-referrer"
+                      />
+                    </span>
+                    <div class="friend-card__body">
+                      <h3 class="friend-card__name" th:text="${friend.name}"></h3>
+                      <p
+                        class="friend-card__url"
+                        th:text="${#strings.replace(#strings.replace(friend.url ?: '', 'https://', ''), 'http://', '')}"
+                      ></p>
+                      <p
+                        class="friend-card__desc"
+                        th:if="${not #strings.isEmpty(friend.description)}"
+                        th:text="${friend.description}"
+                      ></p>
+                    </div>
+                  </a>
+                </div>
+              </th:block>
+
+              <section class="surface friend-step" th:if="${not #strings.isEmpty(guide)}">
+                <h2 class="section-title">申请流程</h2>
+                <ul class="friend-step__list">
+                  <li
+                    th:each="line : ${#strings.arraySplit(guide, '\n')}"
+                    th:if="${not #strings.isEmpty(#strings.trim(line))}"
+                    th:text="${#strings.trim(line)}"
+                  ></li>
+                </ul>
+              </section>
+              <p
+                class="empty surface"
+                th:if="${(pluginCount == null or pluginCount == 0) and (friends == null or #lists.isEmpty(friends))}"
+              >
+                还没有添加友链。可在「主题 → Strata → 设置 → 友情链接」中维护，或安装「链接管理」插件后在此展示。
+              </p>
+
+              <details
+                class="surface friend-note"
+                th:if="${not #strings.isEmpty(notice)}"
+                th:open="${theme.config?.friends?.notice_open ?: false}"
+              >
+                <summary class="section-title">友链须知</summary>
+                <div class="prose friend-note__body" th:utext="${notice}"></div>
+              </details>
+
+              <details
+                class="surface friend-note"
+                th:if="${not #strings.isEmpty(disclaimer)}"
+                th:open="${theme.config?.friends?.disclaimer_open ?: false}"
+              >
+                <summary class="section-title">免责声明</summary>
+                <div class="prose friend-note__body" th:utext="${disclaimer}"></div>
+              </details>
+
+              <section
+                class="surface friend-form"
+                th:if="${submitEnabled}"
+                data-friend-form
+                th:attr="data-page=${singlePage.metadata.name}"
+              >
+                <h2 class="section-title">提交友链</h2>
+                <p class="friend-form__hint">
+                  提交后会进入待审核队列，通过后会自动出现在上方列表（需要站长手动添加）。
+                </p>
+
+                <form class="friend-form__grid" novalidate>
+                  <label class="friend-field">
+                    <span>网站名称 <em>*</em></span>
+                    <input name="name" type="text" maxlength="40" required placeholder="你的博客名称" />
+                  </label>
+                  <label class="friend-field">
+                    <span>网站地址 <em>*</em></span>
+                    <input name="url" type="url" maxlength="300" required placeholder="https://example.com" />
+                  </label>
+                  <label class="friend-field">
+                    <span>邮箱</span>
+                    <input name="email" type="email" maxlength="120" placeholder="用于回复通知，可选" />
+                  </label>
+                  <label class="friend-field">
+                    <span>头像地址</span>
+                    <input name="avatar" type="url" maxlength="300" placeholder="https://example.com/avatar.png" />
+                  </label>
+                  <label class="friend-field">
+                    <span>RSS 地址</span>
+                    <input name="rss" type="url" maxlength="300" placeholder="https://example.com/rss.xml" />
+                  </label>
+                  <label class="friend-field friend-field--full">
+                    <span>网站简介</span>
+                    <textarea name="description" rows="3" maxlength="300" placeholder="一两句话介绍你的站点"></textarea>
+                  </label>
+
+                  <div class="friend-form__footer">
+                    <button type="submit" class="friend-form__submit">提交友链</button>
+                    <p class="friend-form__status" data-friend-status role="status"></p>
+                  </div>
+                </form>
+              </section>
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

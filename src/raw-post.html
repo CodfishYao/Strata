@@ -1,0 +1,33 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${post.spec.title} - ${site.title}|">文章</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${site.url + post.status.permalink},
+        title=${post.spec.title},
+        description=${post.status.excerpt},
+        type='article',
+        image=${post.spec.cover})}"
+    />
+
+  </th:block>
+
+  <body>
+    <th:block th:fragment="content">
+      <!-- 空白文章：不套卡片、不加标题、不生成目录，正文 HTML 原样输出 -->
+      <div class="page-body">
+        <div class="wrap">
+          <div class="raw-page" th:classappend="${#annotations.contains(post, 'blocks')} ? ' raw-page--with-blocks'" th:utext="${post.content.content}"></div>
+          <th:block
+            th:replace="~{modules/page-blocks :: render(
+              blocks=${#annotations.contains(post, 'blocks') ? #annotations.get(post, 'blocks') : ''})}"
+          />
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>

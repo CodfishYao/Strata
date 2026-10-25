@@ -1,0 +1,54 @@
+apiVersion: v1alpha1
+kind: AnnotationSetting
+metadata:
+  name: strata-menu-icon
+spec:
+  targetRef:
+    group: ""
+    kind: MenuItem
+  formSchema:
+    - $formkit: text
+      name: icon
+      label: 菜单图标
+      placeholder: "ri:home-4-line"
+      help: "填写 Iconify 图标名称，例如 ri:home-4-line、ri:link、ri:user-line；留空时按菜单链接自动匹配。图标库可在 iconify.design 查询。"
+---
+apiVersion: v1alpha1
+kind: AnnotationSetting
+metadata:
+  name: strata-page-head
+spec:
+  targetRef:
+    group: content.halo.run
+    kind: SinglePage
+  formSchema:
+    - $formkit: textarea
+      name: pageHead
+      label: 自定义 head（CSS / JS / link）
+      rows: 8
+      help: "内容会原样插入到该页面 <head> 末尾。页面正文里的 <style> 会被 Halo 过滤，样式请写在这里；<script> 可以放正文。"
+    - $formkit: text
+      name: blocks
+      label: 页内卡片
+      placeholder: "profile, stats"
+      help: "仅空白页面生效。逗号分隔，可选：profile（个人信息）、stats（站点统计）、copyright（版权声明）、reward（赞赏）。按填写顺序显示在正文下方。"
+---
+apiVersion: v1alpha1
+kind: AnnotationSetting
+metadata:
+  name: strata-post-head
+spec:
+  targetRef:
+    group: content.halo.run
+    kind: Post
+  formSchema:
+    - $formkit: textarea
+      name: pageHead
+      label: 自定义 head（CSS / JS / link）
+      rows: 8
+      help: "内容会原样插入到该文章 <head> 末尾，适合给自定义模板补充样式。"
+    - $formkit: text
+      name: blocks
+      label: 页内卡片
+      placeholder: "profile, stats"
+      help: "仅空白文章生效。逗号分隔，可选：profile（个人信息）、stats（站点统计）、copyright（版权声明）、reward（赞赏）。"

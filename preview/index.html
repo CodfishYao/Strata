@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Strata 主题预览</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f6f4;
+        --card: #ffffff;
+        --fg: #111111;
+        --muted: #6b6b6b;
+        --line: #e4e4e0;
+        --accent: #2f6feb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+        line-height: 1.6;
+      }
+
+      .wrap {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      header.page-head {
+        margin-bottom: 2.5rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        letter-spacing: -0.02em;
+      }
+
+      .lede {
+        margin: 0 0 0.75rem;
+        color: var(--muted);
+      }
+
+      .note {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.25rem 0.6rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.75rem;
+        color: var(--muted);
+        background: var(--card);
+      }
+
+      .grid {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .page-card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      .page-card__head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .page-card__head h2 {
+        margin: 0;
+        font-size: 1rem;
+      }
+
+      .page-card__head code {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .shots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--line);
+      }
+
+      .shot {
+        position: relative;
+        display: block;
+        background: var(--card);
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .shot span {
+        position: absolute;
+        top: 0.6rem;
+        left: 0.6rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(17, 17, 17, 0.72);
+        color: #fff;
+        font-size: 0.7rem;
+        letter-spacing: 0.02em;
+      }
+
+      .shot--dark span {
+        background: rgba(255, 255, 255, 0.82);
+        color: #111;
+      }
+
+      @media (max-width: 860px) {
+        .shots {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>Strata 主题预览</h1>
+        <p class="lede">
+          覆盖主要页面类型，每页分别展示浅色与深色模式。点击任意截图可查看原图。
+        </p>
+        <span class="note">本地预览页，不随主题安装包分发</span>
+      </header>
+
+      <div class="grid">
+        <article class="page-card">
+          <div class="page-card__head"><h2>首页</h2><code>/</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/home-light.png" target="_blank" rel="noopener">
+              <img src="shots/home-light.png" alt="首页 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/home-dark.png" target="_blank" rel="noopener">
+              <img src="shots/home-dark.png" alt="首页 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>文章归档</h2><code>/archives</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/archives-light.png" target="_blank" rel="noopener">
+              <img src="shots/archives-light.png" alt="文章归档 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/archives-dark.png" target="_blank" rel="noopener">
+              <img src="shots/archives-dark.png" alt="文章归档 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>文章详情</h2><code>/archives/{slug}</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/post-light.png" target="_blank" rel="noopener">
+              <img src="shots/post-light.png" alt="文章详情 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/post-dark.png" target="_blank" rel="noopener">
+              <img src="shots/post-dark.png" alt="文章详情 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>分类集合</h2><code>/categories</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/categories-light.png" target="_blank" rel="noopener">
+              <img src="shots/categories-light.png" alt="分类集合 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/categories-dark.png" target="_blank" rel="noopener">
+              <img src="shots/categories-dark.png" alt="分类集合 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>分类归档</h2><code>/categories/tech</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/category-light.png" target="_blank" rel="noopener">
+              <img src="shots/category-light.png" alt="分类归档 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/category-dark.png" target="_blank" rel="noopener">
+              <img src="shots/category-dark.png" alt="分类归档 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>标签集合</h2><code>/tags</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/tags-light.png" target="_blank" rel="noopener">
+              <img src="shots/tags-light.png" alt="标签集合 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/tags-dark.png" target="_blank" rel="noopener">
+              <img src="shots/tags-dark.png" alt="标签集合 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>标签归档</h2><code>/tags/halo</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/tag-light.png" target="_blank" rel="noopener">
+              <img src="shots/tag-light.png" alt="标签归档 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/tag-dark.png" target="_blank" rel="noopener">
+              <img src="shots/tag-dark.png" alt="标签归档 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>独立页面</h2><code>/about</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/about-light.png" target="_blank" rel="noopener">
+              <img src="shots/about-light.png" alt="独立页面 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/about-dark.png" target="_blank" rel="noopener">
+              <img src="shots/about-dark.png" alt="独立页面 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>友情链接</h2><code>/friends</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/friends-light.png" target="_blank" rel="noopener">
+              <img src="shots/friends-light.png" alt="友情链接 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/friends-dark.png" target="_blank" rel="noopener">
+              <img src="shots/friends-dark.png" alt="友情链接 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>留言板</h2><code>/guestbook</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/guestbook-light.png" target="_blank" rel="noopener">
+              <img src="shots/guestbook-light.png" alt="留言板 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/guestbook-dark.png" target="_blank" rel="noopener">
+              <img src="shots/guestbook-dark.png" alt="留言板 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>个人链接</h2><code>/profiles</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/profiles-light.png" target="_blank" rel="noopener">
+              <img src="shots/profiles-light.png" alt="个人链接 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/profiles-dark.png" target="_blank" rel="noopener">
+              <img src="shots/profiles-dark.png" alt="个人链接 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="page-card">
+          <div class="page-card__head"><h2>空白页面与卡片</h2><code>/blocks-demo</code></div>
+          <div class="shots">
+            <a class="shot" href="shots/blocks-light.png" target="_blank" rel="noopener">
+              <img src="shots/blocks-light.png" alt="空白页面 浅色" loading="lazy" />
+              <span>浅色</span>
+            </a>
+            <a class="shot shot--dark" href="shots/blocks-dark.png" target="_blank" rel="noopener">
+              <img src="shots/blocks-dark.png" alt="空白页面 深色" loading="lazy" />
+              <span>深色</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </body>
+</html>

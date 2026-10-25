@@ -1,0 +1,327 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${post.spec.title} - ${site.title}|">文章</title>
+
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${site.url + post.status.permalink},
+        title=${post.spec.title},
+        description=${post.status.excerpt},
+        type='article',
+        image=${post.spec.cover ?: site.logo})}"
+    />
+
+    <script
+      th:if="${theme.config?.seo?.enable_structured_data ?: true}"
+      type="application/ld+json"
+      th:inline="javascript"
+      th:with="shareImage=${#strings.isEmpty(post.spec.cover ?: site.logo) ? '' : (#strings.startsWith(post.spec.cover ?: site.logo, 'http') ? (post.spec.cover ?: site.logo) : site.url + (post.spec.cover ?: site.logo))}"
+    >
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": /*[[${post.spec.title}]]*/ "",
+        "url": /*[[${site.url + post.status.permalink}]]*/ "",
+        "mainEntityOfPage": /*[[${site.url + post.status.permalink}]]*/ "",
+        "datePublished": /*[[${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}]]*/ "",
+        "dateModified": /*[[${#temporals.format(post.status.lastModifyTime ?: post.spec.publishTime, 'yyyy-MM-dd')}]]*/ "",
+        "author": { "@type": "Person", "name": /*[[${post.owner?.displayName ?: site.title}]]*/ "" },
+        "image": /*[[${shareImage}]]*/ "",
+        "publisher": { "@type": "Organization", "name": /*[[${site.title}]]*/ "" }
+      }
+    </script>
+
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="
+        cursor=${postFinder.cursor(post.metadata.name)},
+        rawLength=${#strings.length(post.content.raw)},
+        coverMode=${theme.config?.post?.cover_banner ?: 'off'},
+        hasCover=${not #strings.isEmpty(post.spec.cover)},
+        heroMode=${coverMode == 'full' and hasCover},
+        copyrightOn=${theme.config?.post?.copyright_enabled ?: true},
+        licenseName=${not #strings.isEmpty(theme.config?.post?.copyright_license) ? theme.config.post.copyright_license : 'CC BY-NC-SA 4.0'},
+        licenseUrl=${not #strings.isEmpty(theme.config?.post?.copyright_license_url) ? theme.config.post.copyright_license_url : 'https://creativecommons.org/licenses/by-nc-sa/4.0/'},
+        rewardOn=${theme.config?.post?.reward_enabled ?: false},
+        rewardWechat=${theme.config?.post?.reward_wechat_image ?: ''},
+        rewardAfdian=${theme.config?.post?.reward_afdian_url ?: ''},
+        rewardCustomUrl=${theme.config?.post?.reward_custom_url ?: ''},
+        rewardCustomImage=${theme.config?.post?.reward_custom_image ?: ''},
+        rewardCustomLabel=${not #strings.isEmpty(theme.config?.post?.reward_custom_label) ? theme.config.post.reward_custom_label : '赞赏'}"
+    >
+      <div class="read-progress" data-progress hidden></div>
+
+      <th:block
+        th:with="
+          cols=${(theme.config?.style?.layout_post ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_post},
+          showToc=${theme.config?.post?.show_toc ?: true}"
+      >
+        <div class="page-body">
+          <div class="wrap">
+            <div
+              class="page-shell"
+              th:attr="data-cols=${cols}"
+              th:classappend="${cols == 'one' and showToc} ? ' page-shell--toc-left'"
+            >
+              <aside
+                class="page-aside page-aside--left"
+                th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+              ></aside>
+
+              <aside class="page-aside page-aside--left toc-left" th:if="${cols == 'one' and showToc}">
+                <div class="aside-block toc-aside" data-toc>
+                  <div class="toc__inner">
+                    <p class="toc__title" th:text="#{common.toc}">目录</p>
+                    <ol data-toc-list></ol>
+                  </div>
+                </div>
+              </aside>
+
+              <div class="page-main">
+                <th:block th:if="${showToc}">
+                  <button
+                    type="button"
+                    class="toc-fab"
+                    data-toc-fab
+                    aria-controls="toc-drawer"
+                    aria-expanded="false"
+                    th:attr="aria-label=#{common.toc}"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                      <path d="M4 6h16M4 12h10M4 18h13" />
+                    </svg>
+                    <span th:text="#{common.toc}">目录</span>
+                  </button>
+
+                  <div class="toc-drawer" data-toc-drawer hidden>
+                    <div class="toc-drawer__backdrop" data-toc-close></div>
+                    <aside
+                      class="toc-drawer__panel"
+                      role="dialog"
+                      aria-modal="true"
+                      th:aria-label="#{common.tocTitle}"
+                      tabindex="-1"
+                    >
+                      <header class="toc-drawer__head">
+                        <span th:text="#{common.tocTitle}">文章目录</span>
+                        <button type="button" class="icon-btn" data-toc-close th:aria-label="#{common.closeToc}">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" />
+                          </svg>
+                        </button>
+                      </header>
+                      <ol class="toc-drawer__list" data-toc-list></ol>
+                    </aside>
+                  </div>
+                </th:block>
+
+                <article
+                  class="surface article"
+                  th:classappend="${hasCover and coverMode != 'off'} ? ' article--with-cover'"
+                >
+                  <figure class="article__cover" th:if="${hasCover and coverMode != 'off'}">
+                    <img
+                      th:src="${post.spec.cover}"
+                      th:alt="${post.spec.title}"
+                      loading="eager"
+                      fetchpriority="high"
+                      decoding="async"
+                      data-avif-cover
+                    />
+                  </figure>
+
+                  <header class="article__head">
+                    <h1 class="article__title" th:text="${post.spec.title}">文章标题</h1>
+                    <div class="post-meta article__meta">
+                      <span class="pin-badge" th:if="${post.spec.pinned}" th:text="#{common.pinned}">置顶</span>
+                      <time
+                        th:datetime="${post.spec.publishTime}"
+                        th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}"
+                      ></time>
+                      <a
+                        th:each="cat : ${post.categories}"
+                        th:href="@{${cat.status.permalink}}"
+                        th:text="${cat.spec.displayName}"
+                      ></a>
+                      <span th:text="|约 ${(rawLength / 400) + 1} 分钟|"></span>
+                      <span
+                        th:if="${post.stats != null and post.stats.visit > 0}"
+                        th:text="|${post.stats.visit} 次阅读|"
+                      ></span>
+                    </div>
+                  </header>
+
+
+                  <div class="prose" data-content th:utext="${post.content.content}"></div>
+
+                  <div class="article__tags" th:if="${not #lists.isEmpty(post.tags)}">
+                    <a
+                      class="tag-chip"
+                      th:each="tag : ${post.tags}"
+                      th:href="@{${tag.status.permalink}}"
+                      th:text="${tag.spec.displayName}"
+                    ></a>
+                  </div>
+
+                  <th:block th:if="${copyrightOn or rewardOn}">
+                    <footer class="post-tail">
+                      <section class="post-tail__card" th:if="${copyrightOn}" th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null">
+                        <div class="post-tail__head">
+                          <span class="post-tail__title">版权声明</span>
+                          <span class="cc-badge" th:if="${#strings.containsIgnoreCase(licenseName, 'cc')}" aria-label="知识共享许可">
+                            <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons.svg')|"></span>
+                            <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-by.svg')|"></span>
+                            <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-nc.svg')|"></span>
+                            <span class="cc-ico" th:style="|--ink-icon:url('https://api.iconify.design/tabler/creative-commons-sa.svg')|"></span>
+                          </span>
+                        </div>
+                        <p class="post-tail__text">
+                          本文采用
+                          <a
+                            th:href="${licenseUrl}"
+                            target="_blank"
+                            rel="noopener noreferrer license"
+                            th:text="|「${licenseName}」|"
+                          ></a>
+                          许可协议。转载请注明作者与原文链接。
+                        </p>
+                      </section>
+
+                      <section class="post-tail__card" th:if="${rewardOn}" th:attr="data-spotlight=${theme.config?.style?.card_spotlight ?: true} ? 'on' : null">
+                        <div class="post-tail__head">
+                          <span class="post-tail__title">赞赏</span>
+                          <span class="post-tail__meta">觉得有用的话，点个赞或支持一下作者</span>
+                        </div>
+
+                        <div class="post-actions">
+                          <button
+                            type="button"
+                            class="post-action"
+                            data-upvote
+                            th:attr="data-name=${post.metadata.name}"
+                            aria-pressed="false"
+                            aria-label="点赞"
+                            title="点赞"
+                          >
+                            <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/thumb-up-line.svg')|" aria-hidden="true"></span>
+                            <span class="post-action__count" data-upvote-count th:text="${post.stats?.upvote ?: 0}">0</span>
+                          </button>
+
+                          <button type="button" class="post-action" data-favorite aria-label="收藏本文" title="收藏本文">
+                            <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/bookmark-3-line.svg')|" aria-hidden="true"></span>
+                          </button>
+
+                          <div
+                            class="post-support"
+                            th:if="${not #strings.isEmpty(rewardWechat) or not #strings.isEmpty(rewardAfdian) or not #strings.isEmpty(rewardCustomImage) or not #strings.isEmpty(rewardCustomUrl)}"
+                          >
+                            <span class="post-support__label">支持作者</span>
+                            <div class="post-support__actions">
+                              <button
+                                type="button"
+                                class="post-action post-action--support"
+                                th:if="${not #strings.isEmpty(rewardWechat)}"
+                                th:attr="data-lightbox-src=${rewardWechat}"
+                                aria-label="微信赞赏"
+                              >
+                                <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/wechat-fill.svg')|" aria-hidden="true"></span>
+                              </button>
+                              <a
+                                class="post-action post-action--support"
+                                th:if="${not #strings.isEmpty(rewardAfdian)}"
+                                th:href="${rewardAfdian}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="爱发电"
+                              >
+                                <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/simple-icons/afdian.svg')|" aria-hidden="true"></span>
+                              </a>
+                              <button
+                                type="button"
+                                class="post-action post-action--support"
+                                th:if="${not #strings.isEmpty(rewardCustomImage)}"
+                                th:attr="data-lightbox-src=${rewardCustomImage}"
+                                th:aria-label="${rewardCustomLabel}"
+                              >
+                                <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/hand-heart-line.svg')|" aria-hidden="true"></span>
+                              </button>
+                              <a
+                                class="post-action post-action--support"
+                                th:if="${#strings.isEmpty(rewardCustomImage) and not #strings.isEmpty(rewardCustomUrl)}"
+                                th:href="${rewardCustomUrl}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                th:aria-label="${rewardCustomLabel}"
+                              >
+                                <span class="post-action__icon" th:style="|--ink-icon:url('https://api.iconify.design/ri/hand-heart-line.svg')|" aria-hidden="true"></span>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p class="post-action__status" data-post-status role="status"></p>
+                      </section>
+                    </footer>
+                  </th:block>
+
+                  <nav
+                    class="post-nav"
+                    th:if="${(theme.config?.post?.show_prev_next ?: true) and (cursor.hasPrevious() or cursor.hasNext())}"
+                  >
+                    <a
+                      th:if="${cursor.hasPrevious()}"
+                      th:href="@{${cursor.previous.status.permalink}}"
+                    >
+                      <span class="post-nav__label">上一篇</span>
+                      <span
+                        class="post-nav__title"
+                        th:text="${cursor.previous.spec.title}"
+                      ></span>
+                    </a>
+                    <a th:if="${cursor.hasNext()}" th:href="@{${cursor.next.status.permalink}}">
+                      <span class="post-nav__label">下一篇</span>
+                      <span class="post-nav__title" th:text="${cursor.next.spec.title}"></span>
+                    </a>
+                  </nav>
+
+                  <div
+                    class="comments"
+                    th:if="${haloCommentEnabled and post.spec.allowComment}"
+                  >
+                    <halo:comment
+                      group="content.halo.run"
+                      kind="Post"
+                      th:attr="name=${post.metadata.name}"
+                    />
+                  </div>
+                </article>
+              </div>
+
+              <aside class="page-aside page-aside--right">
+                <div
+                  class="aside-block toc-aside"
+                  th:if="${showToc}"
+                  data-toc
+                  style="order: 0"
+                >
+                  <div class="toc__inner">
+                    <p class="toc__title" th:text="#{common.toc}">目录</p>
+                    <ol data-toc-list></ol>
+                  </div>
+                </div>
+                <th:block th:insert="~{modules/sidebar :: items(side='right', offset=1)}" />
+              </aside>
+            </div>
+          </div>
+        </div>
+      </th:block>
+    </th:block>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}"
+>
+  <th:block th:fragment="head">
+    <title th:text="|${singlePage.spec.title} - ${site.title}|">留言板</title>
+    <th:block
+      th:replace="~{modules/seo :: meta(
+        url=${site.url + singlePage.status.permalink},
+        title=${singlePage.spec.title},
+        description=${singlePage.status.excerpt},
+        type='article',
+        image=${site.logo})}"
+    />
+  </th:block>
+
+  <body>
+    <th:block
+      th:fragment="content"
+      th:with="cols=${(theme.config?.style?.layout_page ?: 'inherit') == 'inherit' ? (theme.config?.style?.layout_columns ?: 'three') : theme.config.style.layout_page},
+               intro=${theme.config?.guestbook?.intro ?: ''},
+               tips=${theme.config?.guestbook?.tips ?: ''}"
+    >
+      <div class="page-body">
+        <div class="wrap">
+          <div class="page-shell" th:attr="data-cols=${cols}">
+            <aside
+              class="page-aside page-aside--left"
+              th:insert="~{modules/sidebar :: items(side='left', offset=0)}"
+            ></aside>
+
+            <div class="page-main">
+              <header class="surface page-head">
+                <h1 class="page-title" th:text="${singlePage.spec.title}">留言板</h1>
+                <p
+                  class="page-desc"
+                  th:if="${not #strings.isEmpty(intro)}"
+                  th:text="${intro}"
+                ></p>
+              </header>
+
+              <article class="surface article">
+                <div
+                  class="prose"
+                  th:if="${not #strings.isEmpty(singlePage.content.content)}"
+                  th:utext="${singlePage.content.content}"
+                ></div>
+
+                <section
+                  class="guestbook-marquee"
+                  data-marquee
+                  hidden
+                  th:attr="data-page=${singlePage.metadata.name}"
+                >
+
+                  <div class="marquee">
+                    <div class="marquee__track">
+                      <ul class="marquee__group" data-marquee-group></ul>
+                      <ul class="marquee__group" aria-hidden="true" data-marquee-group></ul>
+                    </div>
+                  </div>
+                </section>
+                <section class="guestbook-tips" th:if="${not #strings.isEmpty(tips)}">
+                  <h2 class="section-title">留言须知</h2>
+                  <div class="guestbook-tips__body" th:utext="${tips}"></div>
+                </section>
+
+                <div class="comments" th:if="${haloCommentEnabled}">
+                  <halo:comment
+                    group="content.halo.run"
+                    kind="SinglePage"
+                    th:attr="name=${singlePage.metadata.name}"
+                  />
+                </div>
+
+                <p class="empty" th:unless="${haloCommentEnabled}">
+                  评论组件未启用，请在「控制台 → 插件」中启用评论插件后再使用留言板。
+                </p>
+              </article>
+            </div>
+
+            <aside
+              class="page-aside page-aside--right"
+              th:insert="~{modules/sidebar :: items(side='right', offset=0)}"
+            ></aside>
+          </div>
+        </div>
+      </div>
+    </th:block>
+  </body>
+</html>
