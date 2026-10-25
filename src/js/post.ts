@@ -92,7 +92,7 @@ function trackProgress(): void {
         : scrollable > 0
           ? Math.min(1, Math.max(0, window.scrollY / scrollable))
           : 0;
-    bar.style.transform = `scaleX(${ratio})`;
+    bar.style.setProperty("--read-progress", String(ratio));
     ticking = false;
   };
 

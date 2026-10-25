@@ -1448,19 +1448,50 @@ body:has(.home-hero[data-mode="full_transparent"]) .site-head .icon-btn:hover {
 }
 
 /* ---------- 7. 文章详情 ---------- */
+@property --read-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 .read-progress {
   position: fixed;
   inset: 0 auto auto 0;
   width: 100%;
-  height: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  z-index: 100;
+  height: 3px;
+  z-index: 9999;
   pointer-events: none;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  --read-progress: 0;
 }
+
+.read-progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(var(--read-progress));
+  transform-origin: 0 50%;
+}
+
 .read-progress[hidden] {
-  display: none;
+  display: block;
+}
+
+@supports (animation-timeline: scroll()) {
+  .read-progress {
+    animation: strata-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes strata-progress {
+    from {
+      --read-progress: 0;
+    }
+    to {
+      --read-progress: 1;
+    }
+  }
 }
 
 /* 文章：内容卡片 */
@@ -3937,4 +3968,18 @@ padding: 1.3rem var(--article-px) 1.7rem;
 .raw-page--with-blocks {
   width: min(100%, var(--measure));
   margin-inline: auto;
+}
+
+/* 移动端：侧边栏下沉到正文下方 */
+@media (max-width: 1023px) {
+  .page-aside {
+    display: flex;
+    position: static;
+    top: auto;
+    order: 2;
+  }
+
+  .page-aside--left.toc-left {
+    display: none;
+  }
 }
